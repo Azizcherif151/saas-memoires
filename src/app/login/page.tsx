@@ -1,8 +1,9 @@
 'use client';
-
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function LoginPage() {
+    const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     motDePasse: '',
@@ -47,7 +48,7 @@ export default function LoginPage() {
         message: `Bienvenue, ${donnees.utilisateur.prenom} ! Connexion réussie.`,
       });
 
-      // TODO: Ici nous stockerons plus tard la session ou le token de l'utilisateur
+      router.push('/dashboard');
 
     } catch (erreur: any) {
       setStatut({
