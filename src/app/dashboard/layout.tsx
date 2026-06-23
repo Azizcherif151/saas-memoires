@@ -71,9 +71,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link href="/dashboard/etudiants" className={linkStyle('/dashboard/etudiants')}>
               Étudiants
             </Link>
-            <a href="#" className="block px-4 py-2.5 rounded-md text-slate-500 cursor-not-allowed text-xs">
-              Projets de Mémoire (Bientôt)
-            </a>
+            <Link href="/dashboard/memoires" className={linkStyle('/dashboard/memoires')}>
+  Projets de Mémoire
+</Link>
             <a href="#" className="block px-4 py-2.5 rounded-md text-slate-500 cursor-not-allowed text-xs">
               Salles & Soutenances (Bientôt)
             </a>
