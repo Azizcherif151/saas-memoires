@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function LoginPage() {
-    const router = useRouter();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     motDePasse: '',
@@ -48,7 +48,8 @@ export default function LoginPage() {
         message: `Bienvenue, ${donnees.utilisateur.prenom} ! Connexion réussie.`,
       });
 
-      router.push('/dashboard');
+      // Redirection dynamique reçue depuis l'API (/etudiant, /jury ou /dashboard)
+      router.push(donnees.redirectTo);
 
     } catch (erreur: any) {
       setStatut({
@@ -65,7 +66,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md border border-gray-100">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Connexion Administration
+            Connexion 
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Accédez à votre espace de gestion

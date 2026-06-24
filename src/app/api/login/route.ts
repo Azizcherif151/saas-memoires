@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose'; // 1. On importe l'outil de signature de jose
+import { SignJWT } from 'jose'; 
 
 export async function POST(request: Request) {
   try {
@@ -34,14 +34,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Identifiants incorrects.' }, { status: 401 });
     }
 
-    // 2. Préparation du secret JWT
+    // Préparation du secret JWT
     const secretText = process.env.JWT_SECRET;
     if (!secretText) {
       throw new Error('La variable JWT_SECRET n’est pas configurée.');
     }
     const secret = new TextEncoder().encode(secretText);
 
-    // 3. Création du Token JWT contenant les infos essentielles de l'utilisateur
+    // Création du Token JWT contenant les infos essentielles de l'utilisateur
     const token = await new SignJWT({
       id: utilisateur.id,
       prenom: utilisateur.prenom,
@@ -52,12 +52,21 @@ export async function POST(request: Request) {
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime('2h') // Le token expirera après 2 heures d'inactivité
+      .setExpirationTime('2h') 
       .sign(secret);
 
-    // 4. Configuration de la réponse avec les données utilisateur
+    // Détermination de l'URL de redirection selon le rôle
+    let redirectTo = '/dashboard'; // Admin par défaut
+    if (utilisateur.role === 'etudiant') {
+      redirectTo = '/etudiant';
+    } else if (utilisateur.role === 'jury') {
+      redirectTo = '/jury';
+    }
+
+    // Configuration de la réponse avec la route de redirection incluse
     const reponse = NextResponse.json({
       message: 'Connexion réussie !',
+      redirectTo, // Le front-end utilisera cette variable pour rediriger l'utilisateur
       utilisateur: {
         prenom: utilisateur.prenom,
         nom: utilisateur.nom,
@@ -65,11 +74,11 @@ export async function POST(request: Request) {
       }
     }, { status: 200 });
 
-    // 5. Injection du JWT dans un cookie sécurisé (HttpOnly empêche le vol par script JS)
+    // Injection du JWT dans un cookie sécurisé
     reponse.cookies.set('session_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 2, // 2 heures en secondes
+      maxAge: 60 * 60 * 2, 
       path: '/',
     });
 
