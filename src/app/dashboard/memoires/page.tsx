@@ -29,15 +29,16 @@ export default function MemoiresPage() {
 
   const fetchData = async () => {
     try {
-      // Charger les mémoires
-      const resMemoires = await fetch('/api/memoires');
-      const dataMemoires = await resMemoires.json();
-      if (resMemoires.ok) setMemoires(dataMemoires.memoires);
+      // On interroge la route unifiée /api/memoires pour récupérer les deux listes d'un coup
+      const res = await fetch('/api/memoires');
+      const data = await res.json();
 
-      // Charger les étudiants pour le menu déroulant
-      const resEtudiants = await fetch('/api/etudiants');
-      const dataEtudiants = await resEtudiants.json();
-      if (resEtudiants.ok) setEtudiants(dataEtudiants.etudiants);
+      if (res.ok) {
+        setMemoires(data.memoires || []);
+        setEtudiants(data.etudiants || []);
+      } else {
+        console.error("Erreur renvoyée par l'API :", data.error);
+      }
 
     } catch (err) {
       console.error('Erreur de chargement des données', err);
@@ -67,7 +68,7 @@ export default function MemoiresPage() {
 
       setStatut({ type: 'succes', message: data.message });
       setFormData({ titre: '', description: '', etudiantId: '' });
-      fetchData();
+      fetchData(); // Actualise instantanément la liste des mémoires et retire l'étudiant choisi de la liste déroulante
     } catch (err: any) {
       setStatut({ type: 'erreur', message: err.message });
     } finally {
@@ -98,6 +99,7 @@ export default function MemoiresPage() {
                 placeholder="Ex: Application de gestion de stock..."
               />
             </div>
+            
 
             <div>
               <label className="block text-xs font-medium text-gray-700 uppercase">Description / Cahier des charges</label>
@@ -152,9 +154,13 @@ export default function MemoiresPage() {
                 <div key={m.id} className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 transition bg-gray-50">
                   <div className="flex justify-between items-start">
                     <h3 className="font-semibold text-gray-900 text-base">{m.titre}</h3>
-                    <span className="px-2.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
-                      {m.statut}
-                    </span>
+                    <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+  m.statut === 'valide' ? 'bg-green-100 text-green-800' :
+  m.statut === 'brouillon' ? 'bg-gray-100 text-gray-800' :
+  'bg-yellow-100 text-yellow-800'
+}`}>
+  {m.statut === 'brouillon' ? 'Brouillon' : m.statut === 'en_attente_validation' ? 'En attente' : m.statut}
+</span>
                   </div>
                   <p className="text-gray-600 text-sm mt-1 line-clamp-2">{m.description || 'Aucune description.'}</p>
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">

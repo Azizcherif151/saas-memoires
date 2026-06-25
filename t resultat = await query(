@@ -1,0 +1,12 @@
+  feature/authentification-structure[m
+  feature/connexion-login[m
+  feature/dashboard-admin[m
+  feature/dashboard-layout[m
+  feature/dashboard-stats[m
+  feature/espace-etudiant[m
+  feature/gestion-etudiants[m
+  feature/membres-jury[m
+  feature/projets-memoire[m
+  feature/salles-soutenances[m
+  feature/session-jwt[m
+* [32mmain[m

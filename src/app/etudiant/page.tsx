@@ -9,6 +9,7 @@ interface Projet {
   statut: string;
   remarque_encadreur: string | null;
   derniere_mise_a_jour: string;
+  url_livrable?: string | null;
 }
 
 interface Soutenance {
@@ -25,25 +26,65 @@ export default function EtudiantDashboard() {
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState('');
 
-  useEffect(() => {
-    const fetchEtudiantData = async () => {
-      try {
-        const res = await fetch('/api/etudiants/dashboard');
-        if (!res.ok) {
-          if (res.status === 401) throw new Error('Session expirée ou non autorisée.');
-          throw new Error('Impossible de charger vos données.');
-        }
-        const tokenData = await res.json();
-        setData(tokenData);
-      } catch (err: any) {
-        setErreur(err.message);
-      } finally {
-        setChargement(false);
-      }
-    };
+  // États locaux pour le dépôt de document (accepte une chaîne ou un objet File de type local)
+  const [urlLivrable, setUrlLivrable] = useState<string | File>('');
+  const [statutSoumission, setStatutSoumission] = useState('en_attente'); // en_attente, soumis
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [messageSoumission, setMessageSoumission] = useState('');
 
+  const fetchEtudiantData = async () => {
+    try {
+      const res = await fetch('/api/etudiants/dashboard');
+      if (!res.ok) {
+        if (res.status === 401) throw new Error('Session expirée ou non autorisée.');
+        throw new Error('Impossible de charger vos données.');
+      }
+      const tokenData = await res.json();
+      setData(tokenData);
+
+      // Si un livrable a déjà été soumis, on pré-remplit l'interface
+      if (tokenData.projet?.url_livrable) {
+        setUrlLivrable(tokenData.projet.url_livrable);
+        setStatutSoumission('soumis');
+      }
+    } catch (err: any) {
+      setErreur(err.message);
+    } finally {
+      setChargement(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEtudiantData();
   }, []);
+
+  const handleSoumission = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEnvoiEnCours(true);
+    setMessageSoumission('');
+
+    try {
+      // Construction du FormData pour le transport du fichier binaire
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', urlLivrable); 
+
+      const res = await fetch('/api/etudiants/soumettre', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || 'Une erreur est survenue.');
+
+      setStatutSoumission('soumis');
+      setMessageSoumission('✓ Votre mémoire PDF a bien été enregistré et transmis au jury.');
+      fetchEtudiantData(); // Rafraîchir les données globales
+    } catch (err: any) {
+      setMessageSoumission(`Erreur : ${err.message}`);
+    } finally {
+      setEnvoiEnCours(false);
+    }
+  };
 
   if (chargement) {
     return (
@@ -74,9 +115,8 @@ export default function EtudiantDashboard() {
         </div>
         <button 
           onClick={async () => {
-            // Logique de déconnexion rapide (suppression du cookie et redirection)
             document.cookie = "session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = '/connexion';
+            window.location.href = '/login';
           }}
           className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded text-gray-700 transition"
         >
@@ -85,14 +125,16 @@ export default function EtudiantDashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Section Mémoire / Projet */}
+        {/* Section Gauche : Mémoire et Dépôt */}
         <div className="lg:col-span-2 space-y-6">
+          
+          {/* Sujet de mémoire */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
               <h2 className="text-lg font-bold text-gray-800">Sujet de Mémoire Enregistré</h2>
               {projet && (
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  projet.statut === 'Validé' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  projet.statut === 'Validé' || projet.statut === 'soumis' ? 'bg-green-50 text-green-700 border border-green-200' :
                   projet.statut === 'En cours' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
                   'bg-orange-50 text-orange-700 border border-orange-200'
                 }`}>
@@ -123,9 +165,67 @@ export default function EtudiantDashboard() {
               <p className="text-sm text-gray-500 py-4">Aucun projet de mémoire ne vous a encore été attribué par l'administration.</p>
             )}
           </div>
+
+          {/* Dépôt du document final */}
+          {projet && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="border-b pb-3 mb-4">
+                <h2 className="text-lg font-bold text-gray-800">Dépôt du Livrable Final</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Téléversez votre rapport de mémoire au format officiel PDF pour le jury.</p>
+              </div>
+
+              {statutSoumission === 'soumis' ? (
+                <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg space-y-2">
+                  <p className="text-sm font-semibold">✓ Rapport PDF enregistré avec succès !</p>
+                  <p className="text-xs">
+                    Fichier disponible : <a href={typeof urlLivrable === 'string' ? urlLivrable : '#'} target="_blank" rel="noreferrer" className="underline font-mono text-indigo-600 hover:text-indigo-800 break-all">Voir mon PDF soumis</a>
+                  </p>
+                  <button 
+                    onClick={() => setStatutSoumission('en_attente')} 
+                    className="text-xs text-gray-500 underline hover:text-gray-700 mt-2 block font-medium"
+                  >
+                    Remplacer le fichier PDF
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSoumission} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Fichier du mémoire (Format PDF uniquement)</label>
+                    <input 
+                      type="file" 
+                      required 
+                      accept=".pdf"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          setUrlLivrable(e.target.files[0]); 
+                        }
+                      }}
+                      className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 file:cursor-pointer hover:file:bg-indigo-100"
+                    />
+                  </div>
+
+                  {messageSoumission && (
+                    <p className={`text-xs font-medium ${messageSoumission.startsWith('Erreur') ? 'text-red-600' : 'text-green-600'}`}>
+                      {messageSoumission}
+                    </p>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={envoiEnCours}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-medium transition disabled:bg-indigo-400"
+                    >
+                      {envoiEnCours ? 'Téléversement du PDF...' : 'Soumettre mon mémoire'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Section Planification Soutenance (Droite) */}
+        {/* Section Droite : Planification Soutenance */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Ma Soutenance</h2>

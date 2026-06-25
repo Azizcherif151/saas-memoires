@@ -15,13 +15,14 @@ async function getEtablissementIdFromToken(request: Request) {
   return payload.etablissementId as string; // UUID stocké dans le token
 }
 
-// 1. GET : Récupérer les projets avec les infos de l'étudiant
+// 1. GET : Récupérer les projets ET la liste des étudiants disponibles
 export async function GET(request: Request) {
   try {
     const etablissementId = await getEtablissementIdFromToken(request);
     if (!etablissementId) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    const result = await query(
+    // Requête A : Liste des projets de mémoire existants
+    const memoiresResult = await query(
       `SELECT pm.id, pm.titre, pm.description, pm.statut, pm.derniere_mise_a_jour,
               u.prenom AS etudiant_prenom, u.nom AS etudiant_nom
        FROM projets_memoire pm
@@ -31,14 +32,32 @@ export async function GET(request: Request) {
       [etablissementId]
     );
 
-    return NextResponse.json({ memoires: result.rows });
+    // Requête B (AJOUTÉE) : Liste des étudiants de cet établissement qui n'ont pas encore de projet
+    const etudiantsDisponibles = await query(
+      `SELECT id, nom, prenom 
+       FROM utilisateurs 
+       WHERE role = 'etudiant' 
+         AND etablissement_id = $1
+         AND id NOT IN (
+           SELECT etudiant_id FROM projets_memoire WHERE etudiant_id IS NOT NULL
+         )
+       ORDER BY nom ASC, prenom ASC;`,
+      [etablissementId]
+    );
+
+    // On renvoie les deux tableaux au Front-End
+    return NextResponse.json({ 
+      memoires: memoiresResult.rows,
+      etudiants: etudiantsDisponibles.rows 
+    });
+
   } catch (error) {
     console.error('Erreur GET /api/memoires :', error);
     return NextResponse.json({ error: 'Une erreur interne est survenue.' }, { status: 500 });
   }
 }
 
-// 2. POST : Enregistrer un projet de mémoire
+// 2. POST : Enregistrer un projet de mémoire avec le bon ENUM
 export async function POST(request: Request) {
   try {
     const etablissementId = await getEtablissementIdFromToken(request);
@@ -51,10 +70,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Le titre du mémoire est obligatoire.' }, { status: 400 });
     }
 
-    // Utilisation de gen_random_uuid() si l'ID n'est pas auto-généré par défaut dans ta BDD
+    // Insertion avec le statut valide 'brouillon'
     const result = await query(
       `INSERT INTO projets_memoire (id, etablissement_id, etudiant_id, titre, description, statut)
-       VALUES (gen_random_uuid(), $1, $2, $3, $4, 'En cours')
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, 'brouillon')
        RETURNING *;`,
       [etablissementId, etudiantId || null, titre, description || '']
     );
