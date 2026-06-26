@@ -80,6 +80,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link href="/dashboard/soutenances" className={linkStyle('/dashboard/soutenances')}>
   Salles & Soutenances
 </Link>
+ <Link href="/dashboard/admin" className={linkStyle('/dashboard/admin')}>
+  Administration
+</Link>
           </nav>
         </div>
 
