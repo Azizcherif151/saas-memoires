@@ -26,12 +26,14 @@ export async function GET(request: Request) {
     }
 
     // 3. Récupération des soutenances liées à ce jury via la table pivot corrigée
-    const soutenances = await query(
+   const soutenances = await query(
       `SELECT 
         s.id AS soutenance_id,
         s.date_debut AS date_soutenance,
         sa.nom AS salle,
+        pm.id AS projet_id,            -- Ajouté pour lier les remarques de correction
         pm.titre AS theme_memoire,
+        pm.url_livrable,              -- Ajouté pour afficher le fichier PDF
         u.nom AS etudiant_nom,
         u.prenom AS etudiant_prenom
        FROM soutenances s

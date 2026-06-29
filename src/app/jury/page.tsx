@@ -10,6 +10,8 @@ interface Soutenance {
   theme_memoire: string;
   etudiant_nom: string;
   etudiant_prenom: string;
+  projet_id?: string;       // Ajouté pour cibler le mémoire lié
+  url_livrable?: string | null; // Ajouté pour voir le PDF
 }
 
 export default function JuryDashboard() {
@@ -18,12 +20,13 @@ export default function JuryDashboard() {
   const [erreur, setErreur] = useState('');
   const [chargement, setChargement] = useState(true);
 
-  // États pour la modal de notation
+  // États pour la modal de notation et correction
   const [soutenanceSelectionnee, setSoutenanceSelectionnee] = useState<Soutenance | null>(null);
   const [noteEcrit, setNoteEcrit] = useState('');
   const [noteOral, setNoteOral] = useState('');
   const [commentaires, setCommentaires] = useState('');
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [actionType, setActionType] = useState<'notation' | 'correction'>('notation');
 
   const fetchJuryData = async () => {
     try {
@@ -42,7 +45,6 @@ export default function JuryDashboard() {
     fetchJuryData();
   }, []);
 
-  // Fonction de déconnexion
   const handleLogout = async () => {
     try {
       const res = await fetch('/api/logout', { method: 'POST' });
@@ -78,16 +80,51 @@ export default function JuryDashboard() {
       if (!res.ok) throw new Error(resData.error || 'Erreur lors de l’enregistrement.');
 
       alert(`Évaluation validée ! Note générale : ${resData.noteFinale || resData.noteGenerale}/20`);
-      setSoutenanceSelectionnee(null);
-      setNoteEcrit('');
-      setNoteOral('');
-      setCommentaires('');
-      fetchJuryData(); // Rafraîchir les données
+      fermerModal();
+      fetchJuryData();
     } catch (err: any) {
       alert(err.message);
     } finally {
       setEnvoiEnCours(false);
     }
+  };
+
+  const handleDemanderModifications = async () => {
+    if (!soutenanceSelectionnee || !commentaires.trim()) {
+      alert('Veuillez spécifier des remarques dans le champ observations.');
+      return;
+    }
+
+    setEnvoiEnCours(true);
+    try {
+      const res = await fetch('/api/jury/remarque', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projetId: soutenanceSelectionnee.projet_id,
+          remarque: commentaires,
+        }),
+      });
+
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || 'Erreur lors de l’envoi des modifications.');
+
+      alert('Notification de modification transmise avec succès à l’étudiant !');
+      fermerModal();
+      fetchJuryData();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setEnvoiEnCours(false);
+    }
+  };
+
+  const fermerModal = () => {
+    setSoutenanceSelectionnee(null);
+    setNoteEcrit('');
+    setNoteOral('');
+    setCommentaires('');
+    setActionType('notation');
   };
 
   if (chargement) return <div className="p-8 text-center text-black">Chargement de votre espace...</div>;
@@ -97,10 +134,10 @@ export default function JuryDashboard() {
     <div className="min-h-screen bg-gray-50 p-8 text-black">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Header avec bouton Déconnexion */}
+        {/* Header */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Espace Membre du Jury</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Espace Encadrant | Membre du Jury</h1>
             <p className="text-gray-500">Bienvenue, Pr. {data?.jury.prenom} {data?.jury.nom}</p>
           </div>
           <div className="flex items-center gap-4">
@@ -152,7 +189,7 @@ export default function JuryDashboard() {
                           onClick={() => setSoutenanceSelectionnee(s)}
                           className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition"
                         >
-                          Noter / Évaluer
+                          Évaluer / Relire
                         </button>
                       </td>
                     </tr>
@@ -164,66 +201,121 @@ export default function JuryDashboard() {
         </div>
       </div>
 
-      {/* Modal d'évaluation */}
+      {/* Modal d'évaluation unique */}
       {soutenanceSelectionnee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="text-lg font-bold text-gray-900">Évaluation de la soutenance</h3>
-              <button onClick={() => setSoutenanceSelectionnee(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+              <h3 className="text-lg font-bold text-gray-900">Gestion de l'Évaluation</h3>
+              <button onClick={fermerModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
 
-            <p className="text-xs text-gray-500">
-              Candidat : <strong className="text-gray-700">{soutenanceSelectionnee.etudiant_prenom} {soutenanceSelectionnee.etudiant_nom}</strong><br/>
-              Thème : <span className="italic">{soutenanceSelectionnee.theme_memoire}</span>
-            </p>
+            <div className="text-xs bg-gray-50 p-3 rounded-lg border text-gray-600 space-y-1">
+              <p>Candidat : <strong className="text-gray-700">{soutenanceSelectionnee.etudiant_prenom} {soutenanceSelectionnee.etudiant_nom}</strong></p>
+              <p>Thème : <span className="italic">{soutenanceSelectionnee.theme_memoire}</span></p>
+              
+              {/* LIEN PDF DYNAMIQUE */}
+              <div className="pt-2 border-t mt-2">
+                {soutenanceSelectionnee.url_livrable ? (
+                  <a 
+                    href={soutenanceSelectionnee.url_livrable} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
+                  >
+                    📄 Ouvrir et Relire le Rapport (PDF) →
+                  </a>
+                ) : (
+                  <span className="text-amber-600 italic">Aucun fichier PDF soumis par l'étudiant à ce jour.</span>
+                )}
+              </div>
+            </div>
 
-            <form onSubmit={handleSoumettreNote} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700">Note Écrit (/20)</label>
-                  <input 
-                    type="number" step="0.25" min="0" max="20" required value={noteEcrit}
-                    onChange={(e) => setNoteEcrit(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="14.5"
-                  />
+            {/* Onglets d'action */}
+            <div className="flex border-b text-xs font-medium">
+              <button 
+                type="button"
+                className={`flex-1 py-2 text-center border-b-2 ${actionType === 'notation' ? 'border-indigo-600 text-indigo-600 font-bold' : 'border-transparent text-gray-500'}`}
+                onClick={() => setActionType('notation')}
+              >
+                Attribuer les notes
+              </button>
+              <button 
+                type="button"
+                className={`flex-1 py-2 text-center border-b-2 ${actionType === 'correction' ? 'border-amber-500 text-amber-600 font-bold' : 'border-transparent text-gray-500'}`}
+                onClick={() => setActionType('correction')}
+              >
+                Demander des corrections
+              </button>
+            </div>
+
+            {actionType === 'notation' ? (
+              <form onSubmit={handleSoumettreNote} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700">Note Écrit (/20)</label>
+                    <input 
+                      type="number" step="0.25" min="0" max="20" required value={noteEcrit}
+                      onChange={(e) => setNoteEcrit(e.target.value)}
+                      className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="14.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700">Note Oral (/20)</label>
+                    <input 
+                      type="number" step="0.25" min="0" max="20" required value={noteOral}
+                      onChange={(e) => setNoteOral(e.target.value)}
+                      className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="16"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700">Note Oral (/20)</label>
-                  <input 
-                    type="number" step="0.25" min="0" max="20" required value={noteOral}
-                    onChange={(e) => setNoteOral(e.target.value)}
+                  <label className="block text-xs font-semibold text-gray-700">Observations globales / Procès-verbal</label>
+                  <textarea 
+                    rows={3} value={commentaires} onChange={(e) => setCommentaires(e.target.value)}
                     className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="16"
-                  />
+                    placeholder="Très bonne présentation..."
+                  ></textarea>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-2">
+                  <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">
+                    Annuler
+                  </button>
+                  <button type="submit" disabled={envoiEnCours} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-medium disabled:bg-indigo-400">
+                    {envoiEnCours ? 'Enregistrement...' : 'Valider la note'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-amber-800">Modifications requises (Notifiées à l'étudiant)</label>
+                  <textarea 
+                    rows={4} value={commentaires} onChange={(e) => setCommentaires(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-amber-200 rounded-md text-sm text-black focus:ring-amber-500 focus:border-amber-500 bg-amber-50/30"
+                    placeholder="Ex: Corriger la mise en page de l'introduction, revoir la figure 3 et rajouter les références manquantes."
+                  ></textarea>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-2">
+                  <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">
+                    Annuler
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleDemanderModifications}
+                    disabled={envoiEnCours || !commentaires.trim()} 
+                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-xs font-medium disabled:bg-gray-300"
+                  >
+                    {envoiEnCours ? 'Notification...' : 'Envoyer les corrections'}
+                  </button>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700">Observations / Commentaires</label>
-                <textarea 
-                  rows={3} value={commentaires} onChange={(e) => setCommentaires(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Très bonne maîtrise du sujet, quelques corrections mineures à apporter au rapport..."
-                ></textarea>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-2">
-                <button 
-                  type="button" onClick={() => setSoutenanceSelectionnee(null)}
-                  className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button 
-                  type="submit" disabled={envoiEnCours}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-medium disabled:bg-indigo-400"
-                >
-                  {envoiEnCours ? 'Enregistrement...' : 'Valider la note'}
-                </button>
-              </div>
-            </form>
+            )}
           </div>
         </div>
       )}

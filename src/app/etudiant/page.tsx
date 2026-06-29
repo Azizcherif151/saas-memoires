@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface Projet {
   id: string;
@@ -21,16 +21,39 @@ interface Soutenance {
   est_virtuelle: boolean;
 }
 
+interface JuryMembre {
+  nom: string;
+  prenom: string;
+  role: string;
+}
+
+interface ConvocationData {
+  soutenance_id: string;
+  date_soutenance: string;
+  heure_debut: string;
+  heure_fin: string;
+  salle_nom: string;
+  memoire_titre: string;
+  etudiant_nom: string;
+  etudiant_prenom: string;
+  membres_jury: JuryMembre[];
+}
+
 export default function EtudiantDashboard() {
   const [data, setData] = useState<{ projet: Projet | null; soutenance: Soutenance | null } | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState('');
 
-  // États locaux pour le dépôt de document (accepte une chaîne ou un objet File de type local)
+  // États locaux pour le dépôt de document
   const [urlLivrable, setUrlLivrable] = useState<string | File>('');
   const [statutSoumission, setStatutSoumission] = useState('en_attente'); // en_attente, soumis
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [messageSoumission, setMessageSoumission] = useState('');
+
+  // États locaux et références pour la convocation PDF
+  const [convocation, setConvocation] = useState<ConvocationData | null>(null);
+  const [generateurPdfEnCours, setGenerateurPdfEnCours] = useState(false);
+  const convocationRef = useRef<HTMLDivElement>(null);
 
   const fetchEtudiantData = async () => {
     try {
@@ -42,10 +65,18 @@ export default function EtudiantDashboard() {
       const tokenData = await res.json();
       setData(tokenData);
 
-      // Si un livrable a déjà été soumis, on pré-remplit l'interface
       if (tokenData.projet?.url_livrable) {
         setUrlLivrable(tokenData.projet.url_livrable);
         setStatutSoumission('soumis');
+      }
+
+      // Si la soutenance existe, on va requérir l'API dédiée pour récupérer la composition complète des jurys
+      if (tokenData.soutenance) {
+        const resConv = await fetch('/api/etudiants/convocation');
+        if (resConv.ok) {
+          const convData = await resConv.json();
+          setConvocation(convData);
+        }
       }
     } catch (err: any) {
       setErreur(err.message);
@@ -64,7 +95,6 @@ export default function EtudiantDashboard() {
     setMessageSoumission('');
 
     try {
-      // Construction du FormData pour le transport du fichier binaire
       const formDataToSend = new FormData();
       formDataToSend.append('file', urlLivrable); 
 
@@ -78,11 +108,35 @@ export default function EtudiantDashboard() {
 
       setStatutSoumission('soumis');
       setMessageSoumission('✓ Votre mémoire PDF a bien été enregistré et transmis au jury.');
-      fetchEtudiantData(); // Rafraîchir les données globales
+      fetchEtudiantData();
     } catch (err: any) {
       setMessageSoumission(`Erreur : ${err.message}`);
     } finally {
       setEnvoiEnCours(false);
+    }
+  };
+
+  const telechargerPDF = async () => {
+    if (!convocationRef.current) return;
+    setGenerateurPdfEnCours(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const element = convocationRef.current;
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`Convocation_${convocation?.etudiant_nom || 'Soutenance'}.pdf`);
+    } catch (err) {
+      console.error('Erreur lors de la génération du document PDF:', err);
+    } finally {
+      setGenerateurPdfEnCours(false);
     }
   };
 
@@ -134,11 +188,11 @@ export default function EtudiantDashboard() {
               <h2 className="text-lg font-bold text-gray-800">Sujet de Mémoire Enregistré</h2>
               {projet && (
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  projet.statut === 'Validé' || projet.statut === 'soumis' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  projet.statut === 'valide' || projet.statut === 'Validé' || projet.statut === 'soumis' ? 'bg-green-50 text-green-700 border border-green-200' :
                   projet.statut === 'En cours' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
                   'bg-orange-50 text-orange-700 border border-orange-200'
                 }`}>
-                  {projet.statut}
+                  {projet.statut === 'valide' ? 'Validé' : projet.statut.replace(/_/g, ' ')}
                 </span>
               )}
             </div>
@@ -226,7 +280,7 @@ export default function EtudiantDashboard() {
         </div>
 
         {/* Section Droite : Planification Soutenance */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Ma Soutenance</h2>
 
@@ -256,6 +310,19 @@ export default function EtudiantDashboard() {
                   </div>
                 </div>
 
+                {/* Bouton d'action pour le téléchargement de la convocation */}
+                {convocation && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <button
+                      onClick={telechargerPDF}
+                      disabled={generateurPdfEnCours}
+                      className="w-full text-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md text-xs shadow-sm transition disabled:bg-gray-400"
+                    >
+                      {generateurPdfEnCours ? 'Génération...' : '📄 Télécharger la convocation'}
+                    </button>
+                  </div>
+                )}
+
                 {soutenance.note_finale !== null && (
                   <div className="pt-4 border-t border-gray-100 text-center">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Note Finale Obtenue</span>
@@ -272,6 +339,85 @@ export default function EtudiantDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Conteneur Fantôme : Structure CSS officielle isolée pour l'impression html2canvas */}
+      {/* Conteneur Fantôme : Structure CSS officielle nettoyée de Tailwind pour html2canvas */}
+{convocation && (
+  <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+    <div 
+      ref={convocationRef} 
+      style={{ 
+        width: '210mm', 
+        minHeight: '297mm', 
+        fontFamily: 'serif', 
+        padding: '20mm',
+        backgroundColor: '#ffffff', // Hexadécimal pur
+        color: '#000000',           // Hexadécimal pur
+        lineHeight: '1.6'
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'between', borderBottom: '1px solid #000000', paddingBottom: '16px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '12px' }}>
+        <div style={{ textAlign: 'left' }}>
+          Ministère de l'Enseignement Supérieur<br />
+          Direction des Examens et Concours<br />
+          Institut Supérieur de Technologie
+        </div>
+        <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
+          Année Académique<br />
+          2025-2026
+        </div>
+      </div>
+
+      <div style={{ textAlign: 'center', fontWeight: '900', fontSize: '20px', letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'underline', padding: '24px 0' }}>
+        CONVOCATION OFFICIELLE À LA SOUTENANCE DE MÉMOIRE
+      </div>
+
+      {/* APRÈS */}
+<div style={{ fontSize: '16px' }}>
+        <p style={{ marginBottom: '16px' }}>
+          L'administration académique convoque officiellement l'étudiant(e) : <strong style={{ textTransform: 'uppercase' }}>{convocation.etudiant_nom}</strong> {convocation.etudiant_prenom} à se présenter devant le jury pour la validation de ses travaux de fin d'études.
+        </p>
+        <p style={{ marginBottom: '24px' }}>
+          <strong>Thème de recherche retenu :</strong> <span style={{ fontStyle: 'italic' }}>« {convocation.memoire_titre} »</span>
+        </p>
+      </div>
+
+      <div style={{ border: '1px solid #000000', padding: '20px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '24px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '12px' }}>Détails de l'évaluation</div>
+        <div style={{ marginBottom: '8px' }}><strong>Date du passage :</strong> {new Date(convocation.date_soutenance).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        <div style={{ marginBottom: '8px' }}><strong>Plage Horaire :</strong> {soutenance?.date_debut ? new Date(soutenance.date_debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''} - {soutenance?.date_fin ? new Date(soutenance.date_fin).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
+        <div><strong>Salle Affectée :</strong> {convocation.salle_nom || 'Non communiquée'}</div>
+      </div>
+
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151', borderBottom: '1px solid #000000', paddingBottom: '4px', marginBottom: '12px' }}>Composition Nominative du Jury</div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', textAlign: 'left', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f3f4f6' }}>
+              <th style={{ border: '1px solid #000000', padding: '8px', fontWeight: 'bold' }}>Nom & Prénoms</th>
+              <th style={{ border: '1px solid #000000', padding: '8px', fontWeight: 'bold' }}>Rôle Attribué</th>
+            </tr>
+          </thead>
+          <tbody>
+            {convocation.membres_jury?.map((jury, idx) => (
+              <tr key={idx}>
+                <td style={{ border: '1px solid #000000', padding: '8px' }}>{jury.prenom} {jury.nom}</td>
+                <td style={{ border: '1px solid #000000', padding: '8px', fontWeight: '500', fontStyle: 'italic' }}>{jury.role || 'Membre du Jury'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ paddingTop: '64px', display: 'flex', justifyContent: 'between', fontSize: '12px', alignItems: 'flex-end' }}>
+        <div style={{ fontStyle: 'italic', color: '#9ca3af' }}>Document certifié conforme et généré via l'espace numérique.</div>
+        <div style={{ textAlign: 'center', fontWeight: 'bold', borderTop: '1px solid #000000', paddingTop: '8px', paddingLeft: '32px', paddingRight: '32px', textTransform: 'uppercase', marginLeft: 'auto' }}>
+          Le Secrétariat Académique
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
