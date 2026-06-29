@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Soutenance {
   soutenance_id: number;
@@ -12,6 +13,7 @@ interface Soutenance {
 }
 
 export default function JuryDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<{ jury: any; soutenances: Soutenance[] } | null>(null);
   const [erreur, setErreur] = useState('');
   const [chargement, setChargement] = useState(true);
@@ -40,6 +42,21 @@ export default function JuryDashboard() {
     fetchJuryData();
   }, []);
 
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/logout', { method: 'POST' });
+      if (res.ok) {
+        router.push('/login');
+        router.refresh();
+      } else {
+        alert('Erreur lors de la déconnexion.');
+      }
+    } catch (err) {
+      console.error('Erreur réseau déconnexion:', err);
+    }
+  };
+
   const handleSoumettreNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!soutenanceSelectionnee) return;
@@ -60,7 +77,7 @@ export default function JuryDashboard() {
       const resData = await res.json();
       if (!res.ok) throw new Error(resData.error || 'Erreur lors de l’enregistrement.');
 
-      alert(`Évaluation validée ! Note générale : ${resData.noteGenerale}/20`);
+      alert(`Évaluation validée ! Note générale : ${resData.noteFinale || resData.noteGenerale}/20`);
       setSoutenanceSelectionnee(null);
       setNoteEcrit('');
       setNoteOral('');
@@ -79,13 +96,24 @@ export default function JuryDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8 text-black">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
+        
+        {/* Header avec bouton Déconnexion */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Espace Membre du Jury</h1>
             <p className="text-gray-500">Bienvenue, Pr. {data?.jury.prenom} {data?.jury.nom}</p>
           </div>
-          <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">Enseignant / Jury</span>
+          <div className="flex items-center gap-4">
+            <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
+              Enseignant / Jury
+            </span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition"
+            >
+              Déconnexion
+            </button>
+          </div>
         </div>
 
         {/* Liste des soutenances */}
@@ -113,9 +141,9 @@ export default function JuryDashboard() {
                   {data?.soutenances.map((s) => (
                     <tr key={s.soutenance_id} className="hover:bg-gray-50">
                       <td className="p-4 font-medium text-gray-900">
-  {s.date_soutenance ? new Date(s.date_soutenance).toLocaleDateString('fr-FR') : 'Date non définie'} 
-  {s.heure_debut ? ` à ${s.heure_debut.slice(0, 5)}` : ' (Heure non définie)'}
-</td>
+                        {s.date_soutenance ? new Date(s.date_soutenance).toLocaleDateString('fr-FR') : 'Date non définie'} 
+                        {s.heure_debut ? ` à ${s.heure_debut.slice(0, 5)}` : ' (Heure non définie)'}
+                      </td>
                       <td className="p-4 text-gray-700">{s.etudiant_prenom} {s.etudiant_nom}</td>
                       <td className="p-4 text-gray-600 max-w-xs truncate">{s.theme_memoire}</td>
                       <td className="p-4"><span className="bg-gray-100 px-2 py-1 rounded font-mono text-xs">{s.salle}</span></td>
