@@ -113,8 +113,9 @@ export default function JuryDashboard() {
                   {data?.soutenances.map((s) => (
                     <tr key={s.soutenance_id} className="hover:bg-gray-50">
                       <td className="p-4 font-medium text-gray-900">
-                        {new Date(s.date_soutenance).toLocaleDateString('fr-FR')} à {s.heure_debut.slice(0, 5)}
-                      </td>
+  {s.date_soutenance ? new Date(s.date_soutenance).toLocaleDateString('fr-FR') : 'Date non définie'} 
+  {s.heure_debut ? ` à ${s.heure_debut.slice(0, 5)}` : ' (Heure non définie)'}
+</td>
                       <td className="p-4 text-gray-700">{s.etudiant_prenom} {s.etudiant_nom}</td>
                       <td className="p-4 text-gray-600 max-w-xs truncate">{s.theme_memoire}</td>
                       <td className="p-4"><span className="bg-gray-100 px-2 py-1 rounded font-mono text-xs">{s.salle}</span></td>

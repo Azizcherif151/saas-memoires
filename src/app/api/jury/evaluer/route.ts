@@ -21,25 +21,27 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { soutenanceId, noteEcrit, noteOral, commentaires } = body;
+    const { soutenanceId, noteEcrit, noteOral } = body; // On ignore 'commentaires' pour l'instant
 
     if (!soutenanceId || noteEcrit === undefined || noteOral === undefined) {
       return NextResponse.json({ error: 'Données incomplètes.' }, { status: 400 });
     }
 
-    // Calcul de la note globale (Exemple : Moyenne simple)
-    const noteGenerale = (parseFloat(noteEcrit) + parseFloat(noteOral)) / 2;
+    // Calcul de la note globale requise par ta colonne `note_finale`
+    const noteFinale = (parseFloat(noteEcrit) + parseFloat(noteOral)) / 2;
 
-    // Mise à jour de la soutenance avec les notes et observations
-    // (Ajuste les noms des colonnes selon ta table)
+    // Mise à jour : Uniquement la colonne 'note_finale'
     await query(
       `UPDATE soutenances 
-       SET note_ecrit = $1, note_oral = $2, note_generale = $3, observations = $4
-       WHERE id = $5;`,
-      [noteEcrit, noteOral, noteGenerale, commentaires, soutenanceId]
+       SET note_finale = $1
+       WHERE id = $2;`,
+      [noteFinale, soutenanceId]
     );
 
-    return NextResponse.json({ message: 'Évaluation enregistrée avec succès !', noteGenerale }, { status: 200 });
+    return NextResponse.json({ 
+      message: 'Évaluation enregistrée avec succès !', 
+      noteFinale 
+    }, { status: 200 });
 
   } catch (error) {
     console.error('Erreur lors de l’évaluation :', error);

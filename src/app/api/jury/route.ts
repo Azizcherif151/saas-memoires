@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     if (!etablissementId) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
     const result = await query(
-      `SELECT id, prenom, nom, email, cree_at 
+      `SELECT id, prenom, nom, email, date_creation 
        FROM utilisateurs 
        WHERE etablissement_id = $1 AND role = 'jury'
        ORDER BY nom ASC, prenom ASC;`,
@@ -37,17 +37,45 @@ export async function GET(request: Request) {
   }
 }
 
-// 2. POST : Ajouter un membre du jury
+// 2. POST : Ajouter un membre du jury (Nouveau) OU Affecter (Existant)
 export async function POST(request: Request) {
   try {
     const etablissementId = await getEtablissementIdFromToken(request);
     if (!etablissementId) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
     const body = await request.json();
-    const { prenom, nom, email, motDePasse } = body;
+    const { prenom, nom, email, motDePasse, soutenanceId, roleJury, utilisateurId } = body;
 
+    // ================= CAS 1 : AFFECTATION SEULE (Enseignant existant) =================
+    if (utilisateurId) {
+      if (!soutenanceId || !roleJury) {
+        return NextResponse.json({ error: 'La soutenance et le rôle sont obligatoires.' }, { status: 400 });
+      }
+
+      // Vérification des doublons avec jury_id
+      const doublon = await query(
+        `SELECT id FROM membres_jury_soutenance 
+         WHERE soutenance_id = $1 AND jury_id = $2;`,
+        [soutenanceId, utilisateurId]
+      );
+
+      if (doublon.rows.length > 0) {
+        return NextResponse.json({ error: 'Cet enseignant fait déjà partie du jury de cette soutenance.' }, { status: 409 });
+      }
+
+      // Insertion dans la table pivot avec 'poste' au lieu de 'role_jury'
+      await query(
+        `INSERT INTO membres_jury_soutenance (soutenance_id, jury_id, poste)
+         VALUES ($1, $2, $3);`,
+        [soutenanceId, utilisateurId, roleJury]
+      );
+
+      return NextResponse.json({ message: 'Enseignant affecté au jury avec succès !' }, { status: 200 });
+    }
+
+    // ================= CAS 2 : INSCRIPTION (Nouvel enseignant) =================
     if (!prenom || !nom || !email || !motDePasse) {
-      return NextResponse.json({ error: 'Tous les champs sont obligatoires.' }, { status: 400 });
+      return NextResponse.json({ error: 'Tous les champs d\'identité sont obligatoires pour créer un compte.' }, { status: 400 });
     }
 
     const sel = await bcrypt.genSalt(10);

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-interface MembreJury {
+interface MembreJuryCompte {
   id: string;
   prenom: string;
   nom: string;
@@ -10,163 +10,283 @@ interface MembreJury {
   cree_at: string;
 }
 
-export default function JuryPage() {
-  const [jury, setJury] = useState<MembreJury[]>([]);
-  const [chargement, setChargement] = useState(true);
-  
-  const [formData, setFormData] = useState({ prenom: '', nom: '', email: '', motDePasse: '' });
-  const [statut, setStatut] = useState<{ type: 'succes' | 'erreur' | null; message: string }>({ type: null, message: '' });
-  const [envoi, setEnvoi] = useState(false);
+interface SoutenanceDisponible {
+  id: string;
+  projet_titre: string;
+  etudiant_nom: string;
+  etudiant_prenom: string;
+}
 
-  const fetchJury = async () => {
+export default function GestionComptesJury() {
+  const [juryListe, setJuryListe] = useState<MembreJuryCompte[]>([]);
+  const [soutenances, setSoutenances] = useState<SoutenanceDisponible[]>([]);
+  const [chargement, setChargement] = useState(true);
+  const [creationEnCours, setCreationEnCours] = useState(false);
+  const [affectationEnCours, setAffectationEnCours] = useState(false);
+  const [messageErreur, setMessageErreur] = useState<string | null>(null);
+  const [messageSucces, setMessageSucces] = useState<string | null>(null);
+
+  // Champs Inscription (Bloc 1)
+  const [prenom, setPrenom] = useState('');
+  const [nom, setNom] = useState('');
+  const [email, setEmail] = useState('');
+  const [motDePasse, setMotDePasse] = useState('');
+
+  // Champs Affectation (Bloc 2)
+  const [enseignantId, setEnseignantId] = useState('');
+  const [soutenanceId, setSoutenanceId] = useState('');
+  const [roleJury, setRoleJury] = useState('');
+
+  const chargerDonneesInitiales = async () => {
+    setChargement(true);
     try {
-      const res = await fetch('/api/jury');
-      if (res.ok) {
-        const data = await res.json();
-        setJury(data.jury);
+      const [resJury, resSoutenances] = await Promise.all([
+        fetch('/api/jury'),
+        fetch('/api/soutenances')
+      ]);
+
+      if (resJury.ok) {
+        const dataJury = await resJury.json();
+        setJuryListe(dataJury.jury || []);
+      }
+      if (resSoutenances.ok) {
+        const dataSout = await resSoutenances.json();
+        setSoutenances(dataSout.soutenances || []);
       }
     } catch (err) {
-      console.error('Erreur lors de la récupération du jury', err);
+      console.error('Erreur de chargement', err);
     } finally {
       setChargement(false);
     }
   };
 
   useEffect(() => {
-    fetchJury();
+    chargerDonneesInitiales();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Action 1 : Uniquement inscrire l'enseignant
+  const handleInscrireEnseignant = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEnvoi(true);
-    setStatut({ type: null, message: '' });
+    setCreationEnCours(true);
+    setMessageErreur(null);
+    setMessageSucces(null);
 
     try {
       const res = await fetch('/api/jury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ prenom, nom, email, motDePasse }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Une erreur est survenue.');
 
-      setStatut({ type: 'succes', message: data.message });
-      setFormData({ prenom: '', nom: '', email: '', motDePasse: '' });
-      fetchJury();
-    } catch (err: any) {
-      setStatut({ type: 'erreur', message: err.message });
+      if (res.ok) {
+        setMessageSucces("Compte enseignant créé avec succès !");
+        setPrenom('');
+        setNom('');
+        setEmail('');
+        setMotDePasse('');
+        chargerDonneesInitiales();
+      } else {
+        setMessageErreur(data.error || 'Une erreur est survenue lors de l\'inscription.');
+      }
+    } catch (err) {
+      setMessageErreur('Impossible de joindre le serveur.');
     } finally {
-      setEnvoi(false);
+      setCreationEnCours(false);
+    }
+  };
+
+  // Action 2 : Uniquement affecter un enseignant existant
+  const handleAffecterEnseignant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAffectationEnCours(true);
+    setMessageErreur(null);
+    setMessageSucces(null);
+
+    try {
+      const res = await fetch('/api/jury', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          utilisateurId: enseignantId,
+          soutenanceId,
+          roleJury
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessageSucces("Enseignant affecté à la soutenance avec succès !");
+        setEnseignantId('');
+        setSoutenanceId('');
+        setRoleJury('');
+        chargerDonneesInitiales();
+      } else {
+        setMessageErreur(data.error || 'Une erreur est survenue lors de l\'affectation.');
+      }
+    } catch (err) {
+      setMessageErreur('Impossible de joindre le serveur.');
+    } finally {
+      setAffectationEnCours(false);
     }
   };
 
   return (
-    <div className="p-8 text-black bg-gray-100 min-h-screen">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Membres du Jury</h1>
-        <p className="text-sm text-gray-500 mt-1">Enregistrez les enseignants et évaluateurs pour vos sessions.</p>
-      </header>
+    <div className="text-black space-y-4">
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Formulaire */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Ajouter un évaluateur</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 uppercase">Prénom</label>
-              <input
-                type="text"
-                required
-                value={formData.prenom}
-                onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black"
-                placeholder="Ex: Jean"
-              />
-            </div>
+      {/* Messages globaux */}
+      {messageErreur && <div className="p-3 text-xs text-red-600 bg-red-50 rounded-lg border border-red-100 font-bold">{messageErreur}</div>}
+      {messageSucces && <div className="p-3 text-xs text-emerald-600 bg-emerald-50 rounded-lg border border-emerald-100 font-bold">{messageSucces}</div>}
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 uppercase">Nom</label>
-              <input
-                type="text"
-                required
-                value={formData.nom}
-                onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black"
-                placeholder="Ex: Dupont"
-              />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 uppercase">Adresse Email</label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black"
-                placeholder="enseignant@ecole.com"
-              />
-            </div>
+        {/* Colonne Gauche : Les deux modules d'action séparés */}
+        <div className="flex flex-col gap-6">
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 uppercase">Mot de passe d'accès</label>
-              <input
-                type="password"
-                required
-                value={formData.motDePasse}
-                onChange={(e) => setFormData({ ...formData, motDePasse: e.target.value })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-black"
-              />
-            </div>
+          {/* ================= FORMULAIRE 1 : INSCRIPTION ================= */}
+          <form onSubmit={handleInscrireEnseignant} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-fit">
+            <h2 className="text-lg font-bold text-black mb-1">Identité du Jury</h2>
+            <p className="text-xs text-black mb-4 font-medium">Créez le compte d'un enseignant.</p>
 
-            {statut.message && (
-              <div className={`p-3 rounded-md text-xs text-center font-medium ${statut.type === 'succes' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                {statut.message}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Prénom</label>
+                <input
+                  type="text" required value={prenom} onChange={(e) => setPrenom(e.target.value)}
+                  placeholder="Jean" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
+                />
               </div>
-            )}
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Nom</label>
+                <input
+                  type="text" required value={nom} onChange={(e) => setNom(e.target.value)}
+                  placeholder="Dupont" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Email</label>
+                <input
+                  type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="j.dupont@univ.com" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Mot de passe</label>
+                <input
+                  type="password" required value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)}
+                  placeholder="••••••••" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
-              disabled={envoi}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-md transition"
+              disabled={creationEnCours}
+              className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition disabled:opacity-50"
             >
-              {envoi ? 'Création...' : 'Ajouter au jury'}
+              {creationEnCours ? "Inscription..." : "Créer le compte"}
             </button>
           </form>
+
+          {/* ================= FORMULAIRE 2 : AFFECTATION ================= */}
+          <form onSubmit={handleAffecterEnseignant} className="bg-white p-6 rounded-xl border border-indigo-100 shadow-sm h-fit">
+            <h2 className="text-lg font-bold text-black mb-1">Affectation de Jury</h2>
+            <p className="text-xs text-black mb-4 font-medium">Liez un enseignant existant à un examen.</p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Choisir l'enseignant</label>
+                <select
+                  required
+                  value={enseignantId}
+                  onChange={(e) => setEnseignantId(e.target.value)}
+                  className="w-full text-xs p-2 rounded border bg-white text-black border-gray-300 font-semibold"
+                >
+                  <option value="">-- Sélectionner l'enseignant --</option>
+                  {juryListe.map((j) => (
+                    <option key={j.id} value={j.id}>M./Mme {j.nom} {j.prenom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Choisir la soutenance</label>
+                <select
+                  required
+                  value={soutenanceId}
+                  onChange={(e) => setSoutenanceId(e.target.value)}
+                  className="w-full text-xs p-2 rounded border bg-white text-black border-gray-300 font-semibold"
+                >
+                  <option value="">-- Sélectionner la soutenance --</option>
+{soutenances.map((s) => (
+  <option key={s.id} value={s.id}>
+    {(s.etudiant_prenom || '')} {(s.etudiant_nom || 'Étudiant')} — {(s.projet_titre?.substring(0, 25) || 'Sans titre')}...
+  </option>
+))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold uppercase text-black mb-1">Rôle affecté</label>
+               <select
+  required
+  value={roleJury}
+  onChange={(e) => setRoleJury(e.target.value)}
+  className="w-full text-xs p-2 rounded border bg-white text-black border-gray-300 font-semibold"
+>
+  <option value="">-- Définir un rôle --</option>
+  <option value="president">Président du Jury</option>
+  <option value="rapporteur">Rapporteur</option>
+  <option value="examinateur">Examinateur</option>
+</select>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={affectationEnCours}
+              className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition disabled:opacity-50"
+            >
+              {affectationEnCours ? "Affectation..." : "Valider l'affectation"}
+            </button>
+          </form>
+
         </div>
 
-        {/* Liste */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Membres enregistrés ({jury.length})</h2>
-          
+        {/* Colonne Droite : Tableau complet */}
+        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden h-fit">
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <h3 className="text-sm font-bold text-black">Membres du Jury Enregistrés</h3>
+          </div>
+
           {chargement ? (
-            <p className="text-gray-500 text-sm animate-pulse">Chargement...</p>
-          ) : jury.length === 0 ? (
-            <p className="text-gray-500 text-sm">Aucun membre du jury enregistré pour le moment.</p>
+            <p className="p-6 text-sm text-black animate-pulse font-medium">Mise à jour des listes...</p>
+          ) : juryListe.length === 0 ? (
+            <p className="p-6 text-sm text-black italic font-medium">Aucun compte enseignant créé.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Nom complet</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Email</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Membre depuis</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 border-b border-gray-200 text-2xs font-bold text-black uppercase tracking-wider">
+                  <th className="p-4">Nom complet</th>
+                  <th className="p-4">Email</th>
+                  <th className="p-4">Statut</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-xs text-black font-medium">
+                {juryListe.map((membre) => (
+                  <tr key={membre.id} className="hover:bg-gray-50/50 transition">
+                    <td className="p-4 font-bold text-black">M./Mme {membre.prenom} {membre.nom}</td>
+                    <td className="p-4 text-black">{membre.email}</td>
+                    <td className="p-4 text-emerald-700 font-bold">Compte Actif</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {jury.map((membre) => (
-                    <tr key={membre.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">{membre.prenom} {membre.nom}</td>
-                      <td className="px-4 py-3 text-gray-600 font-mono text-xs">{membre.email}</td>
-                      <td className="px-4 py-3 text-gray-500">{new Date(membre.cree_at).toLocaleDateString('fr-FR')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
+
       </div>
     </div>
   );
