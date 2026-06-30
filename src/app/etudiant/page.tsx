@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+// 1. Importation du composant en haut du fichier
+import ModalChangementMotDePasse from '@/components/ModalChangementMotDePasse';
 
 interface Projet {
   id: string;
@@ -43,6 +45,9 @@ export default function EtudiantDashboard() {
   const [data, setData] = useState<{ projet: Projet | null; soutenance: Soutenance | null } | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState('');
+
+  // État pour contrôler l'affichage de la Modal de changement de mot de passe
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // États locaux pour le dépôt de document
   const [urlLivrable, setUrlLivrable] = useState<string | File>('');
@@ -167,15 +172,23 @@ export default function EtudiantDashboard() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Mon Espace Étudiant</h1>
           <p className="text-sm text-gray-500 mt-1">Suivez l'état d'avancement de votre mémoire et votre planification.</p>
         </div>
-        <button 
-          onClick={async () => {
-            document.cookie = "session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = '/login';
-          }}
-          className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded text-gray-700 transition"
-        >
-          Déconnexion
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsPasswordModalOpen(true)}
+            className="text-xs bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1"
+          >
+            ⚙️ Mot de passe
+          </button>
+          <button 
+            onClick={async () => {
+              document.cookie = "session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              window.location.href = '/login';
+            }}
+            className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded text-gray-700 transition"
+          >
+            Déconnexion
+          </button>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -341,83 +354,87 @@ export default function EtudiantDashboard() {
       </main>
 
       {/* Conteneur Fantôme : Structure CSS officielle isolée pour l'impression html2canvas */}
-      {/* Conteneur Fantôme : Structure CSS officielle nettoyée de Tailwind pour html2canvas */}
-{convocation && (
-  <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
-    <div 
-      ref={convocationRef} 
-      style={{ 
-        width: '210mm', 
-        minHeight: '297mm', 
-        fontFamily: 'serif', 
-        padding: '20mm',
-        backgroundColor: '#ffffff', // Hexadécimal pur
-        color: '#000000',           // Hexadécimal pur
-        lineHeight: '1.6'
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'between', borderBottom: '1px solid #000000', paddingBottom: '16px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '12px' }}>
-        <div style={{ textAlign: 'left' }}>
-          Ministère de l'Enseignement Supérieur<br />
-          Direction des Examens et Concours<br />
-          Institut Supérieur de Technologie
+      {convocation && (
+        <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+          <div 
+            ref={convocationRef} 
+            style={{ 
+              width: '210mm', 
+              minHeight: '297mm', 
+              fontFamily: 'serif', 
+              padding: '20mm',
+              backgroundColor: '#ffffff', 
+              color: '#000000',          
+              lineHeight: '1.6'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'between', borderBottom: '1px solid #000000', paddingBottom: '16px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '12px' }}>
+              <div style={{ textAlign: 'left' }}>
+                Ministère de l'Enseignement Supérieur<br />
+                Direction des Examens et Concours<br />
+                Institut Supérieur de Technologie
+              </div>
+              <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
+                Année Académique<br />
+                2025-2026
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', fontWeight: '900', fontSize: '20px', letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'underline', padding: '24px 0' }}>
+              CONVOCATION OFFICIELLE À LA SOUTENANCE DE MÉMOIRE
+            </div>
+
+            <div className="space-y-4">
+              <p style={{ marginBottom: '16px' }}>
+                L'administration académique convoque officiellement l'étudiant(e) : <strong style={{ textTransform: 'uppercase' }}>{convocation.etudiant_nom}</strong> {convocation.etudiant_prenom} à se présenter devant le jury pour la validation de ses travaux de fin d'études.
+              </p>
+              <p style={{ marginBottom: '24px' }}>
+                <strong>Thème de recherche retenu :</strong> <span style={{ fontStyle: 'italic' }}>« {convocation.memoire_titre} »</span>
+              </p>
+            </div>
+
+            <div style={{ border: '1px solid #000000', padding: '20px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '24px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '12px' }}>Détails de l'évaluation</div>
+              <div style={{ marginBottom: '8px' }}><strong>Date du passage :</strong> {new Date(convocation.date_soutenance).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              <div style={{ marginBottom: '8px' }}><strong>Plage Horaire :</strong> {soutenance?.date_debut ? new Date(soutenance.date_debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''} - {soutenance?.date_fin ? new Date(soutenance.date_fin).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
+              <div><strong>Salle Affectée :</strong> {convocation.salle_nom || 'Non communiquée'}</div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151', borderBottom: '1px solid #000000', paddingBottom: '4px', marginBottom: '12px' }}>Composition Nominative du Jury</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', textAlign: 'left', fontSize: '14px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f3f4f6' }}>
+                    <th style={{ border: '1px solid #000000', padding: '8px', fontWeight: 'bold' }}>Nom & Prénoms</th>
+                    <th style={{ border: '1px solid #000000', padding: '8px', fontWeight: 'bold' }}>Rôle Attribué</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {convocation.membres_jury?.map((jury, idx) => (
+                    <tr key={idx}>
+                      <td style={{ border: '1px solid #000000', padding: '8px' }}>{jury.prenom} {jury.nom}</td>
+                      <td style={{ border: '1px solid #000000', padding: '8px', fontWeight: '500', fontStyle: 'italic' }}>{jury.role || 'Membre du Jury'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ paddingTop: '64px', display: 'flex', justifyContent: 'between', fontSize: '12px', alignItems: 'flex-end' }}>
+              <div style={{ fontStyle: 'italic', color: '#9ca3af' }}>Document certifié conforme et généré via l'espace numérique.</div>
+              <div style={{ textAlign: 'center', fontWeight: 'bold', borderTop: '1px solid #000000', paddingTop: '8px', paddingLeft: '32px', paddingRight: '32px', textTransform: 'uppercase', marginLeft: 'auto' }}>
+                Le Secrétariat Académique
+              </div>
+            </div>
+          </div>
         </div>
-        <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
-          Année Académique<br />
-          2025-2026
-        </div>
-      </div>
+      )}
 
-      <div style={{ textAlign: 'center', fontWeight: '900', fontSize: '20px', letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'underline', padding: '24px 0' }}>
-        CONVOCATION OFFICIELLE À LA SOUTENANCE DE MÉMOIRE
-      </div>
-
-      {/* APRÈS */}
-<div className="space-y-4">
-        <p style={{ marginBottom: '16px' }}>
-          L'administration académique convoque officiellement l'étudiant(e) : <strong style={{ textTransform: 'uppercase' }}>{convocation.etudiant_nom}</strong> {convocation.etudiant_prenom} à se présenter devant le jury pour la validation de ses travaux de fin d'études.
-        </p>
-        <p style={{ marginBottom: '24px' }}>
-          <strong>Thème de recherche retenu :</strong> <span style={{ fontStyle: 'italic' }}>« {convocation.memoire_titre} »</span>
-        </p>
-      </div>
-
-      <div style={{ border: '1px solid #000000', padding: '20px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '24px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '12px' }}>Détails de l'évaluation</div>
-        <div style={{ marginBottom: '8px' }}><strong>Date du passage :</strong> {new Date(convocation.date_soutenance).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-        <div style={{ marginBottom: '8px' }}><strong>Plage Horaire :</strong> {soutenance?.date_debut ? new Date(soutenance.date_debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''} - {soutenance?.date_fin ? new Date(soutenance.date_fin).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
-        <div><strong>Salle Affectée :</strong> {convocation.salle_nom || 'Non communiquée'}</div>
-      </div>
-
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151', borderBottom: '1px solid #000000', paddingBottom: '4px', marginBottom: '12px' }}>Composition Nominative du Jury</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', textAlign: 'left', fontSize: '14px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <th style={{ border: '1px solid #000000', padding: '8px', fontWeight: 'bold' }}>Nom & Prénoms</th>
-              <th style={{ border: '1px solid #000000', padding: '8px', fontWeight: 'bold' }}>Rôle Attribué</th>
-            </tr>
-          </thead>
-          <tbody>
-            {convocation.membres_jury?.map((jury, idx) => (
-              <tr key={idx}>
-                <td style={{ border: '1px solid #000000', padding: '8px' }}>{jury.prenom} {jury.nom}</td>
-                <td style={{ border: '1px solid #000000', padding: '8px', fontWeight: '500', fontStyle: 'italic' }}>{jury.role || 'Membre du Jury'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div style={{ paddingTop: '64px', display: 'flex', justifyContent: 'between', fontSize: '12px', alignItems: 'flex-end' }}>
-        <div style={{ fontStyle: 'italic', color: '#9ca3af' }}>Document certifié conforme et généré via l'espace numérique.</div>
-        <div style={{ textAlign: 'center', fontWeight: 'bold', borderTop: '1px solid #000000', paddingTop: '8px', paddingLeft: '32px', paddingRight: '32px', textTransform: 'uppercase', marginLeft: 'auto' }}>
-          Le Secrétariat Académique
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      {/* Instance globale de la Modal de modification du mot de passe */}
+      <ModalChangementMotDePasse 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+// Importation du composant en haut du fichier
+import ModalChangementMotDePasse from '@/components/ModalChangementMotDePasse';
 
 interface Soutenance {
   soutenance_id: number;
@@ -31,6 +33,9 @@ export default function JuryDashboard() {
   const [data, setData] = useState<{ jury: any; soutenances: Soutenance[]; projetsAttribues: ProjetAttribue[] } | null>(null);
   const [erreur, setErreur] = useState('');
   const [chargement, setChargement] = useState(true);
+
+  // État pour contrôler l'affichage de la Modal de changement de mot de passe
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // États pour la modal
   const [soutenanceSelectionnee, setSoutenanceSelectionnee] = useState<Soutenance | null>(null);
@@ -155,10 +160,16 @@ export default function JuryDashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Espace Encadrant & Jury</h1>
             <p className="text-sm text-gray-500">Bienvenue, Pr. {data?.jury.prenom} {data?.jury.nom}</p>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline-block bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
               Enseignant / Jury
             </span>
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="text-xs bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg font-medium transition"
+            >
+              ⚙️ Mot de passe
+            </button>
             <button
               onClick={handleLogout}
               className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition"
@@ -395,6 +406,12 @@ export default function JuryDashboard() {
           </div>
         </div>
       )}
+
+      {/* Instance globale de la Modal de modification du mot de passe */}
+      <ModalChangementMotDePasse 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </div>
   );
 }
