@@ -10,18 +10,31 @@ interface Soutenance {
   theme_memoire: string;
   etudiant_nom: string;
   etudiant_prenom: string;
-  projet_id?: string;       // Ajouté pour cibler le mémoire lié
-  url_livrable?: string | null; // Ajouté pour voir le PDF
+  projet_id?: string;
+  url_livrable?: string | null;
+}
+
+interface ProjetAttribue {
+  id: string;
+  titre: string;
+  description: string;
+  statut: string;
+  remarque_encadreur: string | null;
+  url_livrable: string | null;
+  etudiant_nom: string;
+  etudiant_prenom: string;
+  derniere_mise_a_jour: string;
 }
 
 export default function JuryDashboard() {
   const router = useRouter();
-  const [data, setData] = useState<{ jury: any; soutenances: Soutenance[] } | null>(null);
+  const [data, setData] = useState<{ jury: any; soutenances: Soutenance[]; projetsAttribues: ProjetAttribue[] } | null>(null);
   const [erreur, setErreur] = useState('');
   const [chargement, setChargement] = useState(true);
 
-  // États pour la modal de notation et correction
+  // États pour la modal
   const [soutenanceSelectionnee, setSoutenanceSelectionnee] = useState<Soutenance | null>(null);
+  const [projetSelectionne, setProjetSelectionne] = useState<ProjetAttribue | null>(null);
   const [noteEcrit, setNoteEcrit] = useState('');
   const [noteOral, setNoteOral] = useState('');
   const [commentaires, setCommentaires] = useState('');
@@ -32,7 +45,7 @@ export default function JuryDashboard() {
     try {
       const res = await fetch('/api/jury/dashboard');
       const info = await res.json();
-      if (!res.ok) throw new Error(info.error || 'Impossible de charger vos soutenances.');
+      if (!res.ok) throw new Error(info.error || 'Impossible de charger vos données.');
       setData(info);
     } catch (err: any) {
       setErreur(err.message);
@@ -89,8 +102,8 @@ export default function JuryDashboard() {
     }
   };
 
-  const handleDemanderModifications = async () => {
-    if (!soutenanceSelectionnee || !commentaires.trim()) {
+  const handleDemanderModifications = async (targetProjetId: string) => {
+    if (!commentaires.trim()) {
       alert('Veuillez spécifier des remarques dans le champ observations.');
       return;
     }
@@ -101,8 +114,9 @@ export default function JuryDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projetId: soutenanceSelectionnee.projet_id,
+          projetId: targetProjetId,
           remarque: commentaires,
+          action: 'CORRIGER'
         }),
       });
 
@@ -121,6 +135,7 @@ export default function JuryDashboard() {
 
   const fermerModal = () => {
     setSoutenanceSelectionnee(null);
+    setProjetSelectionne(null);
     setNoteEcrit('');
     setNoteOral('');
     setCommentaires('');
@@ -131,14 +146,14 @@ export default function JuryDashboard() {
   if (erreur) return <div className="p-8 text-center text-red-600">{erreur}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 text-black">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6 md:p-8 text-black">
+      <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Espace Encadrant | Membre du Jury</h1>
-            <p className="text-gray-500">Bienvenue, Pr. {data?.jury.prenom} {data?.jury.nom}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Espace Encadrant & Jury</h1>
+            <p className="text-sm text-gray-500">Bienvenue, Pr. {data?.jury.prenom} {data?.jury.nom}</p>
           </div>
           <div className="flex items-center gap-4">
             <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
@@ -153,15 +168,66 @@ export default function JuryDashboard() {
           </div>
         </div>
 
-        {/* Liste des soutenances */}
+        {/* SECTION NOUVELLE : Liste des Mémoires Attribués (Suivi Étape par Étape) */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900">Vos Sessions de Soutenance</h2>
-            <p className="text-sm text-gray-500">Liste des mémoires que vous devez évaluer.</p>
+            <h2 className="text-lg font-bold text-gray-900">Vos Projets en Encadrement</h2>
+            <p className="text-sm text-gray-500">Suivez et annotez les mémoires qui vous sont attribués avant ou après planification de la soutenance.</p>
+          </div>
+
+          {!data?.projetsAttribues || data.projetsAttribues.length === 0 ? (
+            <p className="p-6 text-gray-500 text-center text-sm">Aucun projet de mémoire ne vous est actuellement assigné comme encadrant principal.</p>
+          ) : (
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.projetsAttribues.map((p) => (
+                <div key={p.id} className="border border-gray-100 rounded-xl p-4 bg-gray-50/50 flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex justify-between items-start gap-2">
+                      <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{p.titre}</h3>
+                      <span className={`px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wide ${
+                        p.statut === 'valide' ? 'bg-green-100 text-green-800' : p.statut === 'A modifier' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {p.statut}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Étudiant : <span className="font-medium text-gray-700">{p.etudiant_prenom} {p.etudiant_nom}</span></p>
+                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">{p.description}</p>
+                  </div>
+
+                  <div className="pt-2 border-t flex items-center justify-between gap-2">
+                    {p.url_livrable ? (
+                      <a href={p.url_livrable} target="_blank" rel="noreferrer" className="text-2xs text-indigo-600 hover:underline font-bold">
+                        📄 Voir le livrable PDF
+                      </a>
+                    ) : (
+                      <span className="text-2xs text-gray-400 italic">Pas de livrable</span>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setProjetSelectionne(p);
+                        setCommentaires(p.remarque_encadreur || '');
+                      }}
+                      className="bg-white border hover:bg-amber-50 text-amber-700 border-amber-200 px-2.5 py-1 rounded text-2xs font-medium transition"
+                    >
+                      📝 Annoter & Corriger
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Liste des soutenances plannifiées */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-gray-900">Vos Sessions de Soutenance Planifiées</h2>
+            <p className="text-sm text-gray-500">Soutenances officielles programmées par l'administration.</p>
           </div>
 
           {data?.soutenances.length === 0 ? (
-            <p className="p-6 text-gray-500 text-center">Aucune soutenance planifiée pour le moment.</p>
+            <p className="p-6 text-gray-500 text-center text-sm">Aucune soutenance planifiée pour le moment.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -189,7 +255,7 @@ export default function JuryDashboard() {
                           onClick={() => setSoutenanceSelectionnee(s)}
                           className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition"
                         >
-                          Évaluer / Relire
+                          Évaluer / Jury
                         </button>
                       </td>
                     </tr>
@@ -201,37 +267,54 @@ export default function JuryDashboard() {
         </div>
       </div>
 
-      {/* Modal d'évaluation unique */}
+      {/* Modal pour PROJET EN ENCADREMENT BRUT */}
+      {projetSelectionne && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div className="flex justify-between items-center border-b pb-2">
+              <h3 className="text-sm font-bold text-gray-900">Modifications & Corrections de l'Encadrant</h3>
+              <button onClick={fermerModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Thème : <span className="text-gray-800 font-bold">{projetSelectionne.titre}</span></p>
+              <label className="block text-xs font-semibold text-amber-800 mt-4 mb-1">Observations et exigences de correction :</label>
+              <textarea 
+                rows={5} value={commentaires} onChange={(e) => setCommentaires(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-amber-200 rounded-md text-xs text-black focus:ring-amber-500 focus:border-amber-500 bg-amber-50/20 font-sans"
+                placeholder="Ex: Revoir l'introduction, ajouter la partie architecture technique..."
+              />
+            </div>
+            <div className="flex justify-end space-x-3 pt-2">
+              <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">
+                Annuler
+              </button>
+              <button 
+                type="button" 
+                onClick={() => handleDemanderModifications(projetSelectionne.id)}
+                disabled={envoiEnCours || !commentaires.trim()} 
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-xs font-medium disabled:bg-gray-300"
+              >
+                {envoiEnCours ? 'Transmission...' : 'Envoyer à l’étudiant'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal d'évaluation pour SOUTENANCE OFFICIELLE */}
       {soutenanceSelectionnee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="text-lg font-bold text-gray-900">Gestion de l'Évaluation</h3>
+              <h3 className="text-lg font-bold text-gray-900">Évaluation Jury</h3>
               <button onClick={fermerModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
 
             <div className="text-xs bg-gray-50 p-3 rounded-lg border text-gray-600 space-y-1">
               <p>Candidat : <strong className="text-gray-700">{soutenanceSelectionnee.etudiant_prenom} {soutenanceSelectionnee.etudiant_nom}</strong></p>
               <p>Thème : <span className="italic">{soutenanceSelectionnee.theme_memoire}</span></p>
-              
-              {/* LIEN PDF DYNAMIQUE */}
-              <div className="pt-2 border-t mt-2">
-                {soutenanceSelectionnee.url_livrable ? (
-                  <a 
-                    href={soutenanceSelectionnee.url_livrable} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
-                  >
-                    📄 Ouvrir et Relire le Rapport (PDF) →
-                  </a>
-                ) : (
-                  <span className="text-amber-600 italic">Aucun fichier PDF soumis par l'étudiant à ce jour.</span>
-                )}
-              </div>
             </div>
 
-            {/* Onglets d'action */}
             <div className="flex border-b text-xs font-medium">
               <button 
                 type="button"
@@ -257,7 +340,7 @@ export default function JuryDashboard() {
                     <input 
                       type="number" step="0.25" min="0" max="20" required value={noteEcrit}
                       onChange={(e) => setNoteEcrit(e.target.value)}
-                      className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black"
                       placeholder="14.5"
                     />
                   </div>
@@ -266,52 +349,45 @@ export default function JuryDashboard() {
                     <input 
                       type="number" step="0.25" min="0" max="20" required value={noteOral}
                       onChange={(e) => setNoteOral(e.target.value)}
-                      className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black"
                       placeholder="16"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700">Observations globales / Procès-verbal</label>
+                  <label className="block text-xs font-semibold text-gray-700">Observations / Procès-verbal</label>
                   <textarea 
                     rows={3} value={commentaires} onChange={(e) => setCommentaires(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-2 border rounded-md text-sm text-black"
                     placeholder="Très bonne présentation..."
-                  ></textarea>
+                  />
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-2">
-                  <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">
-                    Annuler
-                  </button>
-                  <button type="submit" disabled={envoiEnCours} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-medium disabled:bg-indigo-400">
-                    {envoiEnCours ? 'Enregistrement...' : 'Valider la note'}
-                  </button>
+                  <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">Annuler</button>
+                  <button type="submit" disabled={envoiEnCours} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-xs font-medium">Valider la note</button>
                 </div>
               </form>
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-amber-800">Modifications requises (Notifiées à l'étudiant)</label>
+                  <label className="block text-xs font-semibold text-amber-800">Modifications requises après soutenance</label>
                   <textarea 
                     rows={4} value={commentaires} onChange={(e) => setCommentaires(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-amber-200 rounded-md text-sm text-black focus:ring-amber-500 focus:border-amber-500 bg-amber-50/30"
-                    placeholder="Ex: Corriger la mise en page de l'introduction, revoir la figure 3 et rajouter les références manquantes."
-                  ></textarea>
+                    className="mt-1 block w-full px-3 py-2 border border-amber-200 rounded-md text-xs text-black bg-amber-50/10 font-sans"
+                    placeholder="Ex: Corriger la conclusion..."
+                  />
                 </div>
-
                 <div className="flex justify-end space-x-3 pt-2">
-                  <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">
-                    Annuler
-                  </button>
+                  <button type="button" onClick={fermerModal} className="px-4 py-2 border rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50">Annuler</button>
                   <button 
                     type="button" 
-                    onClick={handleDemanderModifications}
+                    onClick={() => handleDemanderModifications(soutenanceSelectionnee.projet_id || '')}
                     disabled={envoiEnCours || !commentaires.trim()} 
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-xs font-medium disabled:bg-gray-300"
+                    className="px-4 py-2 bg-amber-500 text-white rounded-md text-xs font-medium"
                   >
-                    {envoiEnCours ? 'Notification...' : 'Envoyer les corrections'}
+                    Envoyer les corrections
                   </button>
                 </div>
               </div>

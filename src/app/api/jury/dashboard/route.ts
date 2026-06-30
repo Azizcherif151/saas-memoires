@@ -6,8 +6,9 @@ const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function GET(request: Request) {
   try {
-    // 1. Récupération du token
-    const token = request.headers.get('cookie')
+    // 1. Récupération du token depuis les cookies
+    const cookieHeader = request.headers.get('cookie') || '';
+    const token = cookieHeader
       ?.split('; ')
       .find(row => row.startsWith('session_token='))
       ?.split('=')[1];
@@ -21,19 +22,20 @@ export async function GET(request: Request) {
     const juryId = payload.id;
     const role = payload.role;
 
-    if (role !== 'jury') {
+    // Ajusté au cas où ton rôle en BDD est 'enseignant' ou 'jury'
+    if (role !== 'jury' && role !== 'enseignant') {
       return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
     }
 
-    // 3. Récupération des soutenances liées à ce jury via la table pivot corrigée
-   const soutenances = await query(
+    // 3. REQUÊTE 1 (Inchangée) : Récupération des soutenances liées à ce jury via la table pivot
+    const soutenances = await query(
       `SELECT 
         s.id AS soutenance_id,
         s.date_debut AS date_soutenance,
         sa.nom AS salle,
-        pm.id AS projet_id,            -- Ajouté pour lier les remarques de correction
+        pm.id AS projet_id,            
         pm.titre AS theme_memoire,
-        pm.url_livrable,              -- Ajouté pour afficher le fichier PDF
+        pm.url_livrable,              
         u.nom AS etudiant_nom,
         u.prenom AS etudiant_prenom
        FROM soutenances s
@@ -46,9 +48,31 @@ export async function GET(request: Request) {
       [juryId]
     );
 
+    // 4. REQUÊTE 2 (Ajoutée) : Récupération de TOUS les projets dont il est l'encadrant principal
+    // Utilise exactement les mêmes structures de tables (projets_memoire, utilisateurs)
+    const projetsAttribues = await query(
+      `SELECT 
+        pm.id, 
+        pm.titre, 
+        pm.description, 
+        pm.statut, 
+        pm.remarque_encadreur, 
+        pm.url_livrable, 
+        pm.derniere_mise_a_jour,
+        u.nom AS etudiant_nom, 
+        u.prenom AS etudiant_prenom
+       FROM projets_memoire pm
+       JOIN utilisateurs u ON pm.etudiant_id = u.id
+       WHERE pm.encadreur_id = $1
+       ORDER BY COALESCE(pm.derniere_mise_a_jour, NOW()) DESC;`,
+      [juryId]
+    );
+
+    // 5. Retour de l'ensemble des données attendues par le nouveau Frontend
     return NextResponse.json({
       jury: { nom: payload.nom, prenom: payload.prenom },
-      soutenances: soutenances.rows
+      soutenances: soutenances.rows,
+      projetsAttribues: projetsAttribues.rows
     }, { status: 200 });
 
   } catch (error) {

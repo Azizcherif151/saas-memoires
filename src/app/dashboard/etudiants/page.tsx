@@ -25,7 +25,8 @@ export default function EtudiantsPage() {
       const res = await fetch('/api/etudiants');
       if (res.ok) {
         const data = await res.json();
-        setEtudiants(data.etudiants);
+        // CORRECTION : On cible .etudiants pour extraire le tableau de l'objet de l'API
+        setEtudiants(data.etudiants || []);
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des étudiants', err);

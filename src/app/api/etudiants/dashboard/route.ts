@@ -38,16 +38,17 @@ export async function GET(request: Request) {
     if (projet) {
       const soutenanceResult = await query(
         `SELECT s.date_debut, s.date_fin, s.note_finale, s.convocation_envoyee,
-                sal.nom AS salle_nom, sal.est_virtuelle
+                sal.nom AS salle_nom, COALESCE(sal.est_virtuelle, false) AS est_virtuelle
          FROM soutenances s
-         JOIN salles sal ON s.salle_id = sal.id
+         LEFT JOIN salles sal ON s.salle_id = sal.id
          WHERE s.projet_id = $1 LIMIT 1;`,
         [projet.id]
       );
       soutenance = soutenanceResult.rows[0] || null;
     }
 
-    return NextResponse.json({ projet, soutenance });
+    // Renvoie un objet propre contenant les deux entités ciblées
+    return NextResponse.json({ projet, soutenance }, { status: 200 });
   } catch (error) {
     console.error('Erreur GET /api/etudiant/dashboard :', error);
     return NextResponse.json({ error: 'Une erreur interne est survenue.' }, { status: 500 });

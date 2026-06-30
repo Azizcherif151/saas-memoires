@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     }
 
     const result = await query(
-      `SELECT id, prenom, nom, email, cree_at 
+      `SELECT id, prenom, nom, email, date_creation AS cree_at
        FROM utilisateurs 
        WHERE etablissement_id = $1 AND role = 'etudiant'
        ORDER BY nom ASC, prenom ASC;`,

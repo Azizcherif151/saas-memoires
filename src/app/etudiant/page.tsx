@@ -373,7 +373,7 @@ export default function EtudiantDashboard() {
       </div>
 
       {/* APRÈS */}
-<div style={{ fontSize: '16px' }}>
+<div className="space-y-4">
         <p style={{ marginBottom: '16px' }}>
           L'administration académique convoque officiellement l'étudiant(e) : <strong style={{ textTransform: 'uppercase' }}>{convocation.etudiant_nom}</strong> {convocation.etudiant_prenom} à se présenter devant le jury pour la validation de ses travaux de fin d'études.
         </p>

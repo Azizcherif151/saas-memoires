@@ -1,37 +1,45 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { query } from '@/lib/db';
-// Importe ton utilitaire de décodage/vérification de token ici si nécessaire
-// e.g., import { verifyToken } from '@/lib/auth';
+import { jwtVerify } from 'jose';
 
-// 1. Récupérer les projets assignés à l'encadreur connecté
+// Fonction interne pour récupérer et vérifier les informations de l'encadrant via le token
+async function getEncadrantInfoFromToken() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('session_token')?.value;
+  if (!token) return null;
+
+  const secretText = process.env.JWT_SECRET;
+  if (!secretText) throw new Error('JWT_SECRET manquant');
+  const secret = new TextEncoder().encode(secretText);
+
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    return { id: payload.id as string, role: payload.role as string };
+  } catch (err) {
+    return null;
+  }
+}
+
+// 1. Récupérer TOUS les projets assignés à l'encadreur connecté
 export async function GET(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const auth = await getEncadrantInfoFromToken();
 
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Non autorisé. Session manquante.' }, { status: 401 });
+    if (!auth) {
+      return NextResponse.json({ error: 'Non autorisé. Session manquante ou expirée.' }, { status: 401 });
     }
 
-    // --- ICI : Décode ou vérifie ton sessionToken pour obtenir l'ID de l'encadreur ---
-    // Exemple fictif (remplace selon ta logique : JWT, session DB, etc.) :
-    // const payload = verifyToken(sessionToken);
-    // const encadreurId = payload.userId;
-    
-    const encadreurId = 'METS_ICI_L_ID_EXTRAIT_DU_TOKEN'; 
+    const encadreurId = auth.id; 
 
-    if (!encadreurId) {
-      return NextResponse.json({ error: 'Session invalide ou expirée.' }, { status: 401 });
-    }
-
+    // CORRECTION : Tri par ID ou titre si la derniere_mise_a_jour est parfois NULL au début
     const projets = await query(
       `SELECT p.id, p.titre, p.description, p.statut, p.remarque_encadreur, p.url_livrable, p.derniere_mise_a_jour,
               u.nom AS etudiant_nom, u.prenom AS etudiant_prenom
        FROM projets_memoire p
        JOIN utilisateurs u ON p.etudiant_id = u.id
        WHERE p.encadreur_id = $1
-       ORDER BY p.derniere_mise_a_jour DESC;`,
+       ORDER BY COALESCE(p.derniere_mise_a_jour, NOW()) DESC;`,
       [encadreurId]
     );
 
@@ -41,29 +49,30 @@ export async function GET(request: Request) {
   }
 }
 
-// 2. Valider ou Rejeter un mémoire
+// 2. Valider, Rejeter ou Demander des modifications sur un mémoire
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const auth = await getEncadrantInfoFromToken();
 
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Non autorisé.' }, { status: 401 });
+    if (!auth) {
+      return NextResponse.json({ error: 'Non autorisé. Session manquante ou expirée.' }, { status: 401 });
     }
 
     const { projetId, action, remarque } = await request.json();
 
-    // Vérification de l'action par rapport à ton ENUM Postgres
+    // Gestion des statuts basés sur les actions transmises par ton interface
     let nouveauStatut = '';
     if (action === 'APPROUVER') nouveauStatut = 'valide';
     else if (action === 'REJETER') nouveauStatut = 'rejete';
+    else if (action === 'CORRIGER') nouveauStatut = 'A modifier'; // Gère l'état d'édition requis avant planification
     else return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
 
+    // Sécurité : On s'assure de filtrer également par encadreur_id pour que seul l'encadrant affecté puisse le modifier
     await query(
       `UPDATE projets_memoire 
        SET statut = $1, remarque_encadreur = $2, derniere_mise_a_jour = NOW()
-       WHERE id = $3;`,
-      [nouveauStatut, remarque, projetId]
+       WHERE id = $3 AND encadreur_id = $4;`,
+      [nouveauStatut, remarque, projetId, auth.id]
     );
 
     return NextResponse.json({ success: true, message: `Projet mis à jour avec succès (Statut: ${nouveauStatut})` });

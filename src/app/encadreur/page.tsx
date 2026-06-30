@@ -6,7 +6,7 @@ interface Projet {
   id: string;
   titre: string;
   description: string;
-  statut: 'brouillon' | 'en_attente_validation' | 'valide' | 'rejete';
+  statut: 'brouillon' | 'en_attente_validation' | 'valide' | 'rejete' | 'A modifier';
   remarque_encadreur: string | null;
   url_livrable: string | null;
   etudiant_nom: string;
@@ -38,7 +38,7 @@ export default function EncadreurDashboard() {
     fetchProjets();
   }, []);
 
-  const handleDecision = async (projetId: string, action: 'APPROUVER' | 'REJETER') => {
+  const handleDecision = async (projetId: string, action: 'APPROUVER' | 'REJETER' | 'CORRIGER') => {
     setActionEnCours(projetId);
     try {
       const res = await fetch('/api/encadreur/projets', {
@@ -47,12 +47,12 @@ export default function EncadreurDashboard() {
         body: JSON.stringify({
           projetId,
           action,
-          remarque: remarques[projetId] || '',
+          remarque: remarques[projetId] !== undefined ? remarques[projetId] : (projets.find(p => p.id === projetId)?.remarque_encadreur || ''),
         }),
       });
 
       if (res.ok) {
-        fetchProjets(); // Recharger la liste
+        fetchProjets(); // Recharger la liste mise à jour
       } else {
         alert('Une erreur est survenue lors de la soumission.');
       }
@@ -69,7 +69,7 @@ export default function EncadreurDashboard() {
     <div className="min-h-screen bg-gray-50 text-black p-6 md:p-12">
       <div className="max-w-6xl mx-auto mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Espace Encadrement & Validations</h1>
-        <p className="text-sm text-gray-500 mt-1">Suivez, annotez et validez les rapports de mémoire de vos étudiants.</p>
+        <p className="text-sm text-gray-500 mt-1">Suivez, annotez et donnez vos directives sur les rapports de mémoire de vos étudiants.</p>
       </div>
 
       <div className="max-w-6xl mx-auto space-y-6">
@@ -85,6 +85,7 @@ export default function EncadreurDashboard() {
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                     projet.statut === 'valide' ? 'bg-green-50 text-green-700 border border-green-200' :
                     projet.statut === 'en_attente_validation' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200 animate-pulse' :
+                    projet.statut === 'A modifier' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                     projet.statut === 'rejete' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {projet.statut === 'en_attente_validation' ? 'À valider' : projet.statut}
@@ -123,29 +124,39 @@ export default function EncadreurDashboard() {
                 <div className="space-y-3">
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Commentaires / Remarques</label>
                   <textarea
-                    rows={3}
-                    placeholder="Laissez vos corrections ou retours ici..."
+                    rows={4}
+                    placeholder="Laissez vos corrections, chapitres à revoir ou remarques ici..."
                     defaultValue={projet.remarque_encadreur || ''}
                     onChange={(e) => setRemarques({ ...remarques, [projet.id]: e.target.value })}
-                    className="w-full text-xs p-2 rounded-md border border-gray-200 focus:outline-indigo-600 resize-none bg-white"
+                    className="w-full text-xs p-2 rounded-md border border-gray-200 focus:outline-indigo-600 resize-none bg-white text-black font-sans"
                   />
                 </div>
 
-                <div className="flex gap-2 mt-4">
+                <div className="flex flex-col gap-2 mt-4">
                   <button
-                    disabled={actionEnCours === projet.id || !projet.url_livrable}
-                    onClick={() => handleDecision(projet.id, 'REJETER')}
-                    className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-md text-xs font-semibold transition disabled:opacity-50"
+                    disabled={actionEnCours === projet.id}
+                    onClick={() => handleDecision(projet.id, 'CORRIGER')}
+                    className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-md text-xs font-semibold transition border border-amber-200"
                   >
-                    Rejeter
+                    Demander des modifications
                   </button>
-                  <button
-                    disabled={actionEnCours === projet.id || !projet.url_livrable}
-                    onClick={() => handleDecision(projet.id, 'APPROUVER')}
-                    className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-semibold transition disabled:opacity-50"
-                  >
-                    Valider le projet
-                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      disabled={actionEnCours === projet.id}
+                      onClick={() => handleDecision(projet.id, 'REJETER')}
+                      className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-md text-xs font-semibold transition"
+                    >
+                      Rejeter
+                    </button>
+                    <button
+                      disabled={actionEnCours === projet.id}
+                      onClick={() => handleDecision(projet.id, 'APPROUVER')}
+                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-semibold transition"
+                    >
+                      Valider le projet
+                    </button>
+                  </div>
                 </div>
               </div>
 
