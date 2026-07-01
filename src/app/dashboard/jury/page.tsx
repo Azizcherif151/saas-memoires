@@ -26,13 +26,11 @@ export default function GestionComptesJury() {
   const [messageErreur, setMessageErreur] = useState<string | null>(null);
   const [messageSucces, setMessageSucces] = useState<string | null>(null);
 
-  // Champs Inscription (Bloc 1)
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
 
-  // Champs Affectation (Bloc 2)
   const [enseignantId, setEnseignantId] = useState('');
   const [soutenanceId, setSoutenanceId] = useState('');
   const [roleJury, setRoleJury] = useState('');
@@ -64,7 +62,6 @@ export default function GestionComptesJury() {
     chargerDonneesInitiales();
   }, []);
 
-  // Action 1 : Uniquement inscrire l'enseignant
   const handleInscrireEnseignant = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreationEnCours(true);
@@ -97,7 +94,6 @@ export default function GestionComptesJury() {
     }
   };
 
-  // Action 2 : Uniquement affecter un enseignant existant
   const handleAffecterEnseignant = async (e: React.FormEvent) => {
     e.preventDefault();
     setAffectationEnCours(true);
@@ -134,160 +130,237 @@ export default function GestionComptesJury() {
   };
 
   return (
-    <div className="text-black space-y-4">
-
-      {/* Messages globaux */}
-      {messageErreur && <div className="p-3 text-xs text-red-600 bg-red-50 rounded-lg border border-red-100 font-bold">{messageErreur}</div>}
-      {messageSucces && <div className="p-3 text-xs text-emerald-600 bg-emerald-50 rounded-lg border border-emerald-100 font-bold">{messageSucces}</div>}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Colonne Gauche : Les deux modules d'action séparés */}
-        <div className="flex flex-col gap-6">
-
-          {/* ================= FORMULAIRE 1 : INSCRIPTION ================= */}
-          <form onSubmit={handleInscrireEnseignant} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-fit">
-            <h2 className="text-lg font-bold text-black mb-1">Identité du Jury</h2>
-            <p className="text-xs text-black mb-4 font-medium">Créez le compte d'un enseignant.</p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Prénom</label>
-                <input
-                  type="text" required value={prenom} onChange={(e) => setPrenom(e.target.value)}
-                  placeholder="Jean" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Nom</label>
-                <input
-                  type="text" required value={nom} onChange={(e) => setNom(e.target.value)}
-                  placeholder="Dupont" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Email</label>
-                <input
-                  type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                  placeholder="j.dupont@univ.com" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Mot de passe</label>
-                <input
-                  type="password" required value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)}
-                  placeholder="••••••••" className="w-full text-xs p-2 rounded border bg-white border-gray-300 font-medium"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={creationEnCours}
-              className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition disabled:opacity-50"
-            >
-              {creationEnCours ? "Inscription..." : "Créer le compte"}
-            </button>
-          </form>
-
-          {/* ================= FORMULAIRE 2 : AFFECTATION ================= */}
-          <form onSubmit={handleAffecterEnseignant} className="bg-white p-6 rounded-xl border border-indigo-100 shadow-sm h-fit">
-            <h2 className="text-lg font-bold text-black mb-1">Affectation de Jury</h2>
-            <p className="text-xs text-black mb-4 font-medium">Liez un enseignant existant à un examen.</p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Choisir l'enseignant</label>
-                <select
-                  required
-                  value={enseignantId}
-                  onChange={(e) => setEnseignantId(e.target.value)}
-                  className="w-full text-xs p-2 rounded border bg-white text-black border-gray-300 font-semibold"
-                >
-                  <option value="">-- Sélectionner l'enseignant --</option>
-                  {juryListe.map((j) => (
-                    <option key={j.id} value={j.id}>M./Mme {j.nom} {j.prenom}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Choisir la soutenance</label>
-                <select
-                  required
-                  value={soutenanceId}
-                  onChange={(e) => setSoutenanceId(e.target.value)}
-                  className="w-full text-xs p-2 rounded border bg-white text-black border-gray-300 font-semibold"
-                >
-                  <option value="">-- Sélectionner la soutenance --</option>
-{soutenances.map((s) => (
-  <option key={s.id} value={s.id}>
-    {(s.etudiant_prenom || '')} {(s.etudiant_nom || 'Étudiant')} — {(s.projet_titre?.substring(0, 25) || 'Sans titre')}...
-  </option>
-))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-3xs font-bold uppercase text-black mb-1">Rôle affecté</label>
-               <select
-  required
-  value={roleJury}
-  onChange={(e) => setRoleJury(e.target.value)}
-  className="w-full text-xs p-2 rounded border bg-white text-black border-gray-300 font-semibold"
->
-  <option value="">-- Définir un rôle --</option>
-  <option value="president">Président du Jury</option>
-  <option value="rapporteur">Rapporteur</option>
-  <option value="examinateur">Examinateur</option>
-</select>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={affectationEnCours}
-              className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition disabled:opacity-50"
-            >
-              {affectationEnCours ? "Affectation..." : "Valider l'affectation"}
-            </button>
-          </form>
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-6 sm:py-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+            Gestion des Membres du Jury
+          </h1>
+          <p className="text-gray-600 text-sm mt-2">
+            Créez les comptes d'enseignants et assignez-les aux soutenances
+          </p>
         </div>
+      </header>
 
-        {/* Colonne Droite : Tableau complet */}
-        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden h-fit">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-sm font-bold text-black">Membres du Jury Enregistrés</h3>
+      {/* Messages */}
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-3">
+        {messageErreur && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm font-medium flex items-center gap-3">
+            <span>⚠️</span> {messageErreur}
+          </div>
+        )}
+        {messageSucces && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm font-medium flex items-center gap-3">
+            <span>✓</span> {messageSucces}
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Formulaires */}
+          <div className="space-y-6">
+            {/* Création de compte */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Créer un compte</h2>
+                <p className="text-xs text-gray-600 mt-1">Enregistrez un nouvel enseignant</p>
+              </div>
+
+              <form onSubmit={handleInscrireEnseignant} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Prénom</label>
+                  <input
+                    type="text"
+                    required
+                    value={prenom}
+                    onChange={(e) => setPrenom(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    placeholder="Jean"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Nom</label>
+                  <input
+                    type="text"
+                    required
+                    value={nom}
+                    onChange={(e) => setNom(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    placeholder="Dupont"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    placeholder="j.dupont@univ.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Mot de passe</label>
+                  <input
+                    type="password"
+                    required
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={creationEnCours}
+                  className="w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
+                >
+                  {creationEnCours ? "Création en cours..." : "Créer le compte"}
+                </button>
+              </form>
+            </div>
+
+            {/* Affectation */}
+            <div className="bg-white rounded-xl border border-blue-200 p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+              <div className="mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-100 rounded-lg flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Affecter à une soutenance</h2>
+                <p className="text-xs text-gray-600 mt-1">Liez un enseignant à une soutenance</p>
+              </div>
+
+              <form onSubmit={handleAffecterEnseignant} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Enseignant</label>
+                  <select
+                    required
+                    value={enseignantId}
+                    onChange={(e) => setEnseignantId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                  >
+                    <option value="">-- Sélectionner --</option>
+                    {juryListe.map((j) => (
+                      <option key={j.id} value={j.id}>M./Mme {j.nom} {j.prenom}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Soutenance</label>
+                  <select
+                    required
+                    value={soutenanceId}
+                    onChange={(e) => setSoutenanceId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                  >
+                    <option value="">-- Sélectionner --</option>
+                    {soutenances.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.etudiant_prenom} {s.etudiant_nom} — {s.projet_titre.substring(0, 25)}...
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Rôle</label>
+                  <select
+                    required
+                    value={roleJury}
+                    onChange={(e) => setRoleJury(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                  >
+                    <option value="">-- Choisir un rôle --</option>
+                    <option value="president">🎓 Président du Jury</option>
+                    <option value="rapporteur">📄 Rapporteur</option>
+                    <option value="examinateur">✓ Examinateur</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={affectationEnCours}
+                  className="w-full mt-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-green-400 disabled:to-green-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
+                >
+                  {affectationEnCours ? "Affectation..." : "Valider l'affectation"}
+                </button>
+              </form>
+            </div>
           </div>
 
-          {chargement ? (
-            <p className="p-6 text-sm text-black animate-pulse font-medium">Mise à jour des listes...</p>
-          ) : juryListe.length === 0 ? (
-            <p className="p-6 text-sm text-black italic font-medium">Aucun compte enseignant créé.</p>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-200 text-2xs font-bold text-black uppercase tracking-wider">
-                  <th className="p-4">Nom complet</th>
-                  <th className="p-4">Email</th>
-                  <th className="p-4">Statut</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-xs text-black font-medium">
-                {juryListe.map((membre) => (
-                  <tr key={membre.id} className="hover:bg-gray-50/50 transition">
-                    <td className="p-4 font-bold text-black">M./Mme {membre.prenom} {membre.nom}</td>
-                    <td className="p-4 text-black">{membre.email}</td>
-                    <td className="p-4 text-emerald-700 font-bold">Compte Actif</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          {/* Tableau */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50">
+              <h2 className="text-lg font-bold text-gray-900">
+                Membres enregistrés ({juryListe.length})
+              </h2>
+            </div>
 
-      </div>
+            {chargement ? (
+              <div className="p-12 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full animate-pulse mb-3">
+                  <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                <p className="text-gray-600 text-sm font-medium">Chargement...</p>
+              </div>
+            ) : juryListe.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="text-4xl mb-3">👥</div>
+                <p className="text-gray-600 text-sm font-medium">Aucun compte enseignant créé</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-700">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-semibold text-gray-900">Nom complet</th>
+                      <th className="px-6 py-4 text-left font-semibold text-gray-900">Email</th>
+                      <th className="px-6 py-4 text-left font-semibold text-gray-900">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {juryListe.map((membre) => (
+                      <tr key={membre.id} className="hover:bg-blue-50 transition">
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                              {membre.prenom.charAt(0)}{membre.nom.charAt(0)}
+                            </div>
+                            M./Mme {membre.prenom} {membre.nom}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-600 text-xs font-mono">{membre.email}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+                            Actif
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

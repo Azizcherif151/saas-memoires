@@ -14,6 +14,7 @@ interface UserProfile {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [chargement, setChargement] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -40,69 +41,144 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (chargement) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-black">
-        <p className="text-gray-600 text-lg animate-pulse font-medium">Chargement d'EduSoutenance...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 animate-pulse">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">Chargement d'EduSoutenance...</p>
+        </div>
       </div>
     );
   }
 
   // Fonction pour ajouter le style dynamique si l'onglet est actif
   const linkStyle = (path: string) => 
-    `block px-4 py-2.5 rounded-md font-medium transition ${
+    `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
       pathname === path 
-        ? 'bg-indigo-600 text-white' 
-        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+        ? 'bg-blue-600 text-white shadow-md scale-105' 
+        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
     }`;
 
+  const navItems = [
+    { href: '/dashboard', label: 'Vue d\'ensemble', icon: '📊' },
+    { href: '/dashboard/etudiants', label: 'Étudiants', icon: '👤' },
+    { href: '/dashboard/memoires', label: 'Projets de Mémoire', icon: '📝' },
+    { href: '/dashboard/jury', label: 'Membres du Jury', icon: '👥' },
+    { href: '/dashboard/soutenances', label: 'Salles & Soutenances', icon: '📅' },
+    { href: '/dashboard/admin', label: 'Administration', icon: '⚙️' },
+  ];
+
   return (
-    <div className="min-h-screen flex bg-gray-100 text-black">
-      {/* Sidebar Fixe */}
-      <aside className="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shadow-xl shrink-0">
-        <div className="space-y-6">
-          <div className="px-2 py-4 border-b border-slate-700">
-            <h2 className="text-xl font-black tracking-wider text-indigo-400">EduSoutenance</h2>
-            <p className="text-xs text-slate-400 mt-1 font-mono">Espace Administration</p>
+    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg border border-gray-200 hover:shadow-md transition"
+      >
+        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Sidebar */}
+      <aside className={`${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0 fixed lg:relative w-72 bg-white border-r border-gray-200 flex flex-col justify-between p-6 shadow-lg lg:shadow-none transition-transform duration-300 z-40 h-screen overflow-y-auto shrink-0`}>
+        
+        {/* Top Section */}
+        <div className="space-y-8">
+          {/* Logo & Brand */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.5 0 10-4.996 10-10.747S17.5 6.253 12 6.253z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">EduSoutenance</h2>
+                <p className="text-xs text-gray-500 font-medium">Administration</p>
+              </div>
+            </div>
           </div>
-          
+
+          {/* Navigation */}
           <nav className="space-y-2">
-            <Link href="/dashboard" className={linkStyle('/dashboard')}>
-              Vue d'ensemble
-            </Link>
-            <Link href="/dashboard/etudiants" className={linkStyle('/dashboard/etudiants')}>
-              Étudiants
-            </Link>
-            <Link href="/dashboard/memoires" className={linkStyle('/dashboard/memoires')}>
-  Projets de Mémoire
-</Link>
-<Link href="/dashboard/jury" className={linkStyle('/dashboard/jury')}>
-  Membres du Jury
-</Link>
-            <Link href="/dashboard/soutenances" className={linkStyle('/dashboard/soutenances')}>
-  Salles & Soutenances
-</Link>
- <Link href="/dashboard/admin" className={linkStyle('/dashboard/admin')}>
-  Administration
-</Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={linkStyle(item.href)}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span>{item.label}</span>
+                {pathname === item.href && (
+                  <span className="ml-auto text-lg">✓</span>
+                )}
+              </Link>
+            ))}
           </nav>
+
+          {/* Divider */}
+          <div className="h-px bg-gray-200"></div>
+
+          
+        
         </div>
 
-        {/* Pied de la Sidebar */}
-        <div className="pt-4 border-t border-slate-700 space-y-3">
-          <div className="px-2">
-            <p className="text-sm font-semibold truncate">{user?.prenom} {user?.nom}</p>
-            <p className="text-xs text-slate-400 truncate font-mono">{user?.email}</p>
+        {/* Bottom Section */}
+        <div className="space-y-4 pt-6 border-t border-gray-200">
+          {/* User Profile */}
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                {user?.prenom?.charAt(0)}{user?.nom?.charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {user?.prenom} {user?.nom}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+              <span className="text-gray-600 font-medium capitalize">{user?.role || 'Utilisateur'}</span>
+            </div>
           </div>
+
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white transition text-xs py-2 px-3 rounded-md font-medium"
+            className="w-full flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white transition-all duration-200 text-sm py-2.5 px-4 rounded-lg font-medium shadow-sm hover:shadow-md"
           >
-            Déconnexion
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Déconnexion</span>
           </button>
+
+          {/* Footer Info */}
+          <p className="text-xs text-gray-500 text-center pt-2">
+            EduSoutenance v1.0
+          </p>
         </div>
       </aside>
 
-      {/* Zone de contenu variable */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Overlay pour mobile */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto w-full lg:w-auto">
         {children}
       </div>
     </div>

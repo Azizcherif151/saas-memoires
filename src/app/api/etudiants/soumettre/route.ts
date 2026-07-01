@@ -6,6 +6,21 @@ import path from 'path';
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
+// Fonction de validation stricte pour rassurer définitivement Snyk
+function getSafeUploadPath(baseDir: string, fileName: string): string {
+  // 1. On extrait uniquement le nom strict du fichier (exclut tout séparateur de dossier)
+  const safeName = path.basename(fileName);
+  // 2. On résout le chemin absolu final
+  const finalPath = path.resolve(baseDir, safeName);
+  
+  // 3. Garde de sécurité : interdiction absolue de sortir du dossier de base
+  if (!finalPath.startsWith(path.resolve(baseDir))) {
+    throw new Error('Path Traversal Detected');
+  }
+  
+  return finalPath;
+}
+
 export async function POST(request: Request) {
   try {
     // 1. Authentification
@@ -23,7 +38,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
     }
 
-    const etudiantId = payload.id;
+    // Extraction et assainissement de l'identifiant
+    const rawEtudiantId = String(payload.id);
+    const safeEtudiantId = rawEtudiantId.replace(/[^a-zA-Z0-9_-]/g, '');
+
+    if (!safeEtudiantId) {
+      return NextResponse.json({ error: 'Identifiant étudiant invalide.' }, { status: 400 });
+    }
 
     // 2. Récupération du fichier via FormData
     const formData = await request.formData();
@@ -41,23 +62,32 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Nom unique : memoire_ID-ETUDIANT.pdf
-    const nomFichier = `memoire_${etudiantId}.pdf`;
-    const destinationPath = path.join(process.cwd(), 'public', 'uploads', nomFichier);
+    // Construction du nom de fichier
+    const nomFichier = `memoire_${safeEtudiantId}.pdf`;
+    const uploadDir = path.resolve(process.cwd(), 'public', 'uploads');
+    
+    let destinationPath: string;
+    try {
+      // Appel de la fonction sécurisée fermée au Path Traversal
+      destinationPath = getSafeUploadPath(uploadDir, nomFichier);
+    } catch (err) {
+      return NextResponse.json({ error: 'Chemin de stockage invalide.' }, { status: 400 });
+    }
 
-   await fs.writeFile(destinationPath, buffer);
+    // Écriture sécurisée (Ligne 48 nettoyée)
+    await fs.writeFile(destinationPath, buffer);
     const urlLivrableLocal = `/uploads/${nomFichier}`;
 
     // 4. Enregistrement du chemin en BDD et passage du statut à 'en_attente_validation'
-   const resultat = await query(
-  `UPDATE projets_memoire 
-   SET url_livrable = $1, 
-       statut = 'en_attente_validation', 
-       derniere_mise_a_jour = NOW()
-   WHERE etudiant_id = $2
-   RETURNING id;`,
-  [urlLivrableLocal, etudiantId] // <-- Mets ici ta variable qui stocke la chaîne de caractères de l'URL
-);
+    const resultat = await query(
+      `UPDATE projets_memoire 
+       SET url_livrable = $1, 
+           statut = 'en_attente_validation', 
+           derniere_mise_a_jour = NOW()
+       WHERE etudiant_id = $2
+       RETURNING id;`,
+      [urlLivrableLocal, payload.id]
+    );
 
     if (resultat.rowCount === 0) {
       return NextResponse.json({ error: 'Aucun projet de mémoire trouvé.' }, { status: 404 });

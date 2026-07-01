@@ -15,6 +15,7 @@ export default function LoginPage() {
   });
 
   const [chargement, setChargement] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -62,61 +63,121 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md border border-gray-100">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Connexion 
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Accédez à votre espace de gestion
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Adresse Email</label>
-              <input
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                placeholder="admin@etablissement.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
-              <input
-                name="motDePasse"
-                type="password"
-                required
-                value={formData.motDePasse}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-              />
-            </div>
+    <div className="min-h-screen flex">
+      {/* Côté Blanc - Formulaire */}
+      <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center px-6 sm:px-12 py-12">
+        <div className="max-w-md mx-auto w-full">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-3">
+              Connexion
+            </h1>
+            <p className="text-gray-600 text-sm sm:text-base">
+              Accédez à votre espace de gestion
+            </p>
           </div>
 
-          {statut.message && (
-            <div className={`p-3 rounded-md text-sm text-center ${statut.type === 'succes' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-              {statut.message}
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Email Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Adresse Email
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                  </svg>
+                </span>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="votre@email.com"
+                />
+              </div>
             </div>
-          )}
 
-          <div>
+            {/* Password Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
+                  </svg>
+                </span>
+                <input
+                  name="motDePasse"
+                  type="password"
+                  required
+                  value={formData.motDePasse}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-300  text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            {/* Remember */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 bg-white border border-gray-300  accent-blue-500 cursor-pointer"
+                />
+                <span className="ml-2 text-sm text-gray-600">Se souvenir de moi</span>
+              </label>
+            </div>
+
+            {/* Status Message */}
+            {statut.message && (
+              <div className={`p-4  text-sm text-center transition ${
+                statut.type === 'succes' 
+                  ? 'bg-blue-50 text-blue-800 border border-blue-200' 
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}>
+                {statut.message}
+              </div>
+            )}
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={chargement}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold  transition duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
             >
               {chargement ? 'Vérification...' : 'Se connecter'}
             </button>
-          </div>
-        </form>
+          </form>
+
+          
+        </div>
+      </div>
+
+      {/* Côté Bleu - Welcome Section */}
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex-col items-center justify-center px-12 py-12 relative overflow-hidden">
+        {/* Décoration */}
+        <div className="absolute top-10 right-10 w-40 h-40 bg-blue-300  opacity-40 blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-32 h-32 bg-blue-200  opacity-40 blur-3xl"></div>
+
+        {/* Content */}
+        <div className="relative z-10 text-center max-w-md">
+          <h2 className="text-5xl font-bold text-white mb-4">
+            EduSoutenance
+          </h2>
+          <p className="text-blue-50 text-lg leading-relaxed mb-8">
+           Simplifiez la planification, le suivi et l'évaluation de vos mémoires de fin de cycle. Une expérience fluide et centralisée pour étudiants, encadreur et membres du jury.
+          </p>
+        </div>
       </div>
     </div>
   );
