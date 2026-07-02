@@ -49,7 +49,7 @@ export default function RegisterPage() {
         type: 'succes',
         message: 'Établissement et compte administrateur créés avec succès !',
       });
-      
+
       setFormData({ nomEtablissement: '', prenomAdmin: '', nomAdmin: '', emailAdmin: '', motDePasseEnClair: '' });
 
     } catch (erreur: any) {
@@ -63,104 +63,133 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md border border-gray-100">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Inscrire un établissement
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+        {/* Header */}
+        <div className="space-y-3">
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5.5m0 0H9.5m0 0H4m0 0v-1" />
+            </svg>
+          </div>
+          <h2 className="text-center text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+            Inscrire un Établissement
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-gray-600">
             Créez l'établissement et son compte administrateur principal
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            {/* Infos Établissement */}
+        {/* Form */}
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Établissement Section */}
+          <div className="space-y-4 pb-6 border-b border-gray-200">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Nom de l'établissement</label>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                🏢 Nom de l'établissement
+              </label>
               <input
                 name="nomEtablissement"
                 type="text"
                 required
                 value={formData.nomEtablissement}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
                 placeholder="Ex: Université de Technologie"
               />
             </div>
+          </div>
 
-            <hr className="my-4 border-gray-200" />
-
-            {/* Infos Admin */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Prénom Admin</label>
-                <input
-                  name="prenomAdmin"
-                  type="text"
-                  required
-                  value={formData.prenomAdmin}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Nom Admin</label>
-                <input
-                  name="nomAdmin"
-                  type="text"
-                  required
-                  value={formData.nomAdmin}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                />
-              </div>
+          {/* Admin Section */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                👤 Prénom du responsable
+              </label>
+              <input
+                name="prenomAdmin"
+                type="text"
+                required
+                value={formData.prenomAdmin}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                placeholder="Jean"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email de l'administrateur</label>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                👤 Nom du responsable
+              </label>
+              <input
+                name="nomAdmin"
+                type="text"
+                required
+                value={formData.nomAdmin}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                placeholder="Dupont"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                📧 Email de l'administrateur
+              </label>
               <input
                 name="emailAdmin"
                 type="email"
                 required
                 value={formData.emailAdmin}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
                 placeholder="admin@etablissement.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                🔒 Mot de passe initial
+              </label>
               <input
                 name="motDePasseEnClair"
                 type="password"
                 required
                 value={formData.motDePasseEnClair}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                placeholder="••••••••"
               />
             </div>
           </div>
 
-          {/* Messages de retour */}
+          {/* Messages */}
           {statut.message && (
-            <div className={`p-3 rounded-md text-sm text-center ${statut.type === 'succes' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-              {statut.message}
+            <div className={`p-4 rounded-lg text-sm text-center font-medium transition ${
+              statut.type === 'succes'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {statut.type === 'succes' ? '✓' : '⚠️'} {statut.message}
             </div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={chargement}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
-            >
-              {chargement ? 'Inscription en cours...' : "Inscrire l'établissement"}
-            </button>
-          </div>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={chargement}
+            className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
+          >
+            {chargement ? '⏳ Inscription en cours...' : '✓ Inscrire l\'établissement'}
+          </button>
         </form>
+
+        {/* Footer Info */}
+        <div className="pt-4 border-t border-gray-200 text-center">
+          <p className="text-xs text-gray-500">
+            Ces identifiants permettront de créer le compte administrateur de votre établissement.
+          </p>
+        </div>
       </div>
     </div>
   );
