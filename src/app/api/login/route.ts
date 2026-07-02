@@ -56,8 +56,11 @@ export async function POST(request: Request) {
       .sign(secret);
 
     // Détermination de l'URL de redirection selon le rôle
-    let redirectTo = '/dashboard'; // Admin par défaut
-    if (utilisateur.role === 'etudiant') {
+    let redirectTo = '/dashboard'; // Admin d'école par défaut
+    
+    if (utilisateur.role === 'superadmin') {
+      redirectTo = '/superadmin/dashboard'; // Redirection pour le Super Admin global
+    } else if (utilisateur.role === 'etudiant') {
       redirectTo = '/etudiant';
     } else if (utilisateur.role === 'jury') {
       redirectTo = '/jury';

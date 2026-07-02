@@ -74,15 +74,15 @@ export default function EncadreurDashboard() {
 
       <div className="max-w-6xl mx-auto space-y-6">
         {projets.length === 0 ? (
-          <p className="text-sm text-gray-500 bg-white p-6 rounded-xl border text-center">Aucun projet ne vous a été attribué pour le moment.</p>
+          <p className="text-sm text-gray-500 bg-white p-6  -xl border text-center">Aucun projet ne vous a été attribué pour le moment.</p>
         ) : (
           projets.map((projet) => (
-            <div key={projet.id} className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div key={projet.id} className="bg-white border border-gray-100  -xl shadow-sm p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Infos Projet & Étudiant */}
               <div className="lg:col-span-2 space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                  <span className={`px-2.5 py-0.5  -full text-xs font-semibold ${
                     projet.statut === 'valide' ? 'bg-green-50 text-green-700 border border-green-200' :
                     projet.statut === 'en_attente_validation' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200 animate-pulse' :
                     projet.statut === 'A modifier' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
@@ -120,7 +120,7 @@ export default function EncadreurDashboard() {
               </div>
 
               {/* Bloc Décision Encadreur */}
-              <div className="bg-gray-50 p-4 rounded-xl flex flex-col justify-between border border-gray-100">
+              <div className="bg-gray-50 p-4  -xl flex flex-col justify-between border border-gray-100">
                 <div className="space-y-3">
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Commentaires / Remarques</label>
                   <textarea
@@ -128,7 +128,7 @@ export default function EncadreurDashboard() {
                     placeholder="Laissez vos corrections, chapitres à revoir ou remarques ici..."
                     defaultValue={projet.remarque_encadreur || ''}
                     onChange={(e) => setRemarques({ ...remarques, [projet.id]: e.target.value })}
-                    className="w-full text-xs p-2 rounded-md border border-gray-200 focus:outline-indigo-600 resize-none bg-white text-black font-sans"
+                    className="w-full text-xs p-2  -md border border-gray-200 focus:outline-indigo-600 resize-none bg-white text-black font-sans"
                   />
                 </div>
 
@@ -136,7 +136,7 @@ export default function EncadreurDashboard() {
                   <button
                     disabled={actionEnCours === projet.id}
                     onClick={() => handleDecision(projet.id, 'CORRIGER')}
-                    className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-md text-xs font-semibold transition border border-amber-200"
+                    className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700  -md text-xs font-semibold transition border border-amber-200"
                   >
                     Demander des modifications
                   </button>
@@ -145,14 +145,14 @@ export default function EncadreurDashboard() {
                     <button
                       disabled={actionEnCours === projet.id}
                       onClick={() => handleDecision(projet.id, 'REJETER')}
-                      className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-md text-xs font-semibold transition"
+                      className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-700  -md text-xs font-semibold transition"
                     >
                       Rejeter
                     </button>
                     <button
                       disabled={actionEnCours === projet.id}
                       onClick={() => handleDecision(projet.id, 'APPROUVER')}
-                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-semibold transition"
+                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white  -md text-xs font-semibold transition"
                     >
                       Valider le projet
                     </button>

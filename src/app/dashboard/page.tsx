@@ -58,7 +58,7 @@ export default function DashboardPage() {
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-40 bg-white rounded-xl border border-gray-200 animate-pulse"
+                  className="h-40 bg-white  -xl border border-gray-200 animate-pulse"
                 ></div>
               ))}
             </div>
@@ -70,12 +70,12 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Statistiques clés</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                 {/* Étudiants Card */}
-                <div className="group relative bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="group relative bg-white  -xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent  -xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Étudiants</span>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 12H9m4 5h-4m7-9h-4m4 5h4m-11 0h4" />
                         </svg>
@@ -92,12 +92,12 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Mémoires Card */}
-                <div className="group relative bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="group relative bg-white  -xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent  -xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Mémoires</span>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.5 0 10-4.996 10-10.747S17.5 6.253 12 6.253z" />
                         </svg>
@@ -114,12 +114,12 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Soutenances Card */}
-                <div className="group relative bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="group relative bg-white  -xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent  -xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Soutenances</span>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -136,12 +136,12 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Salles Card */}
-                <div className="group relative bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="group relative bg-white  -xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent  -xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Salles Jury</span>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5.5m0 0H9.5m0 0H4m0 0v-1" />
                         </svg>

@@ -54,7 +54,7 @@ export default function ModalChangementMotDePasse({ isOpen, onClose }: ModalProp
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100] text-black animate-fade-in">
-      <div className="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-2xl relative border border-gray-100">
+      <div className="bg-white  -xl max-w-sm w-full p-6 space-y-4 shadow-2xl relative border border-gray-100">
         <div className="flex justify-between items-center border-b pb-2">
           <div>
             <h3 className="text-sm font-bold text-gray-900">Modifier le mot de passe</h3>
@@ -64,7 +64,7 @@ export default function ModalChangementMotDePasse({ isOpen, onClose }: ModalProp
         </div>
 
         {statut && (
-          <div className={`p-2.5 rounded-md text-2xs font-medium ${
+          <div className={`p-2.5  -md text-2xs font-medium ${
             statut.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'
           }`}>
             {statut.message}
@@ -79,7 +79,7 @@ export default function ModalChangementMotDePasse({ isOpen, onClose }: ModalProp
               required
               value={ancienMotDePasse}
               onChange={(e) => setAncienMotDePasse(e.target.value)}
-              className="mt-1 block w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs bg-white text-black focus:outline-indigo-600"
+              className="mt-1 block w-full px-3 py-1.5 border border-gray-200  -md text-xs bg-white text-black focus:outline-indigo-600"
               placeholder="••••••••"
             />
           </div>
@@ -91,7 +91,7 @@ export default function ModalChangementMotDePasse({ isOpen, onClose }: ModalProp
               required
               value={nouveauMotDePasse}
               onChange={(e) => setNouveauMotDePasse(e.target.value)}
-              className="mt-1 block w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs bg-white text-black focus:outline-indigo-600"
+              className="mt-1 block w-full px-3 py-1.5 border border-gray-200  -md text-xs bg-white text-black focus:outline-indigo-600"
               placeholder="••••••••"
             />
           </div>
@@ -103,16 +103,16 @@ export default function ModalChangementMotDePasse({ isOpen, onClose }: ModalProp
               required
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
-              className="mt-1 block w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs bg-white text-black focus:outline-indigo-600"
+              className="mt-1 block w-full px-3 py-1.5 border border-gray-200  -md text-xs bg-white text-black focus:outline-indigo-600"
               placeholder="••••••••"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2 border-t text-2xs">
-            <button type="button" onClick={onClose} className="px-3 py-1.5 border rounded-md text-gray-600 hover:bg-gray-50">
+            <button type="button" onClick={onClose} className="px-3 py-1.5 border  -md text-gray-600 hover:bg-gray-50">
               Annuler
             </button>
-            <button type="submit" disabled={enCours} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium disabled:bg-indigo-400">
+            <button type="submit" disabled={enCours} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white  -md font-medium disabled:bg-indigo-400">
               {enCours ? 'Mise à jour...' : 'Sauvegarder'}
             </button>
           </div>

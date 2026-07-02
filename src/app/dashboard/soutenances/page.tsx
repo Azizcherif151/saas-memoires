@@ -120,7 +120,7 @@ export default function SoutenancesPage() {
       {/* Notifications */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         {notif.message && (
-          <div className={`p-4 rounded-lg text-sm font-medium flex items-center gap-3 ${
+          <div className={`p-4  -lg text-sm font-medium flex items-center gap-3 ${
             notif.type === 'succes'
               ? 'bg-green-50 text-green-800 border border-green-200'
               : 'bg-red-50 text-red-800 border border-red-200'
@@ -137,9 +137,9 @@ export default function SoutenancesPage() {
           {/* Formulaires */}
           <div className="space-y-6">
             {/* Création de salle */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="bg-white  -xl border border-gray-200 p-6 shadow-sm">
               <div className="mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center mb-3">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5.5m0 0H9.5m0 0H4m0 0v-1" />
                   </svg>
@@ -156,12 +156,12 @@ export default function SoutenancesPage() {
                     required
                     value={nomSalle}
                     onChange={(e) => setNomSalle(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                     placeholder="Ex: Amphi A, Salle 204..."
                   />
                 </div>
 
-                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-3 bg-gray-50 p-3  -lg border border-gray-200">
                   <input
                     type="checkbox"
                     id="virtuelle"
@@ -176,7 +176,7 @@ export default function SoutenancesPage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 text-sm uppercase tracking-wider"
+                  className="w-full bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-semibold py-2.5  -lg transition-all duration-200 transform hover:scale-105 text-sm uppercase tracking-wider"
                 >
                   Créer la salle
                 </button>
@@ -184,9 +184,9 @@ export default function SoutenancesPage() {
             </div>
 
             {/* Planification */}
-            <div className="bg-white rounded-xl border border-blue-200 p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+            <div className="bg-white  -xl border border-blue-200 p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
               <div className="mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-100 rounded-lg flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-100  -lg flex items-center justify-center mb-3">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -202,7 +202,7 @@ export default function SoutenancesPage() {
                     required
                     value={planif.projet_id}
                     onChange={(e) => setPlanif({ ...planif, projet_id: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 bg-white"
+                    className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 bg-white"
                   >
                     <option value="">Sélectionner un projet...</option>
                     {projets.map((p) => (
@@ -217,7 +217,7 @@ export default function SoutenancesPage() {
                     required
                     value={planif.salle_id}
                     onChange={(e) => setPlanif({ ...planif, salle_id: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 bg-white"
+                    className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 bg-white"
                   >
                     <option value="">Sélectionner une salle...</option>
                     {salles.map((s) => (
@@ -235,7 +235,7 @@ export default function SoutenancesPage() {
                     required
                     value={planif.date_debut}
                     onChange={(e) => setPlanif({ ...planif, date_debut: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                   />
                 </div>
 
@@ -246,14 +246,14 @@ export default function SoutenancesPage() {
                     required
                     value={planif.date_fin}
                     onChange={(e) => setPlanif({ ...planif, date_fin: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={envoi}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-green-400 disabled:to-green-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-green-400 disabled:to-green-500 text-white font-semibold py-2.5  -lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
                 >
                   {envoi ? 'Planification...' : 'Valider la planification'}
                 </button>
@@ -262,7 +262,7 @@ export default function SoutenancesPage() {
           </div>
 
           {/* Planning */}
-          <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="xl:col-span-2 bg-white  -xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50">
               <h2 className="text-lg font-bold text-gray-900">
                 Planning des Soutenances ({soutenances.length})
@@ -271,7 +271,7 @@ export default function SoutenancesPage() {
 
             {chargement ? (
               <div className="p-12 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full animate-pulse mb-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100  -full animate-pulse mb-3">
                   <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -301,7 +301,7 @@ export default function SoutenancesPage() {
                           {s.projet_titre}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-800 rounded-full font-medium text-xs">
+                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-800  -full font-medium text-xs">
                             📍 {s.salle_nom}
                           </span>
                         </td>
