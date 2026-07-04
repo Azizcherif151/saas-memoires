@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CalendarIcon, AvertissIcon } from '@/components/icons';
 
 interface Etudiant {
   etudiant_id: string;
@@ -88,13 +89,17 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              <span className="absolute left-3 top-3 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
               <input
                 type="text"
                 placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 text-sm border border-gray-300  -lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               />
             </div>
           </div>
@@ -104,26 +109,30 @@ export default function AdminDashboard() {
       {/* Stats Cards */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white  -lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Étudiants sans projet</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{sansProjets}</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100  -lg flex items-center justify-center">
-                <span className="text-2xl">📚</span>
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center text-yellow-700">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
               </div>
             </div>
           </div>
 
-          <div className="bg-white  -lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Étudiants sans encadreur</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{sansEncadreur}</p>
               </div>
-              <div className="w-12 h-12 bg-red-100  -lg flex items-center justify-center">
-                <span className="text-2xl">👨‍🏫</span>
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
             </div>
           </div>
@@ -133,8 +142,8 @@ export default function AdminDashboard() {
       {/* Table */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
         {chargement ? (
-          <div className="bg-white  -xl border border-gray-200 p-12 text-center shadow-sm">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100  -full animate-pulse mb-3">
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full animate-pulse mb-3">
               <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -143,7 +152,7 @@ export default function AdminDashboard() {
             <p className="text-gray-600 text-sm font-medium">Chargement du panel d'administration...</p>
           </div>
         ) : (
-          <div className="bg-white  -xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50">
               <h2 className="text-lg font-bold text-gray-900">
                 Gestion des Attributions ({filteredEtudiants.length})
@@ -152,8 +161,12 @@ export default function AdminDashboard() {
             </div>
 
             {filteredEtudiants.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="text-4xl mb-3">📭</div>
+              <div className="p-12 text-center flex flex-col items-center justify-center">
+                <div className="text-gray-400 mb-3">
+                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 7.5m16.5 0V6a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6v1.5m10.5-3v1.5m-6-1.5v1.5m12 6.75h-12" />
+                  </svg>
+                </div>
                 <p className="text-gray-600 text-sm font-medium">
                   {searchQuery ? 'Aucun étudiant ne correspond à votre recherche' : 'Aucun étudiant trouvé'}
                 </p>
@@ -174,7 +187,7 @@ export default function AdminDashboard() {
                         {/* Étudiant */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8  -full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
                               {etudiant.prenom.charAt(0)}{etudiant.nom.charAt(0)}
                             </div>
                             <div>
@@ -188,12 +201,12 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 max-w-xs">
                           {etudiant.titre ? (
                             <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-green-600  -full"></span>
+                              <span className="w-2 h-2 bg-green-600 rounded-full"></span>
                               <span className="text-gray-900 font-medium truncate">{etudiant.titre}</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-yellow-600  -full"></span>
+                              <AvertissIcon />
                               <span className="text-amber-700 italic text-xs">Aucun projet créé</span>
                             </div>
                           )}
@@ -206,7 +219,7 @@ export default function AdminDashboard() {
                               disabled={sauvegardeEnCours === etudiant.etudiant_id}
                               defaultValue={etudiant.encadreur_id || ''}
                               onChange={(e) => handleAssignation(etudiant.etudiant_id, e.target.value, etudiant.projet_id)}
-                              className="text-xs p-2.5  -lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-800 disabled:opacity-50 cursor-pointer"
+                              className="text-xs p-2.5 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-800 disabled:opacity-50 cursor-pointer"
                             >
                               <option value="" disabled className="text-gray-500">
                                 -- Choisir un encadreur --
@@ -219,7 +232,7 @@ export default function AdminDashboard() {
                             </select>
                             {sauvegardeEnCours === etudiant.etudiant_id && (
                               <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-blue-600  -full animate-pulse"></div>
+                                <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
                                 <span className="text-xs text-blue-600 font-medium">Mise à jour...</span>
                               </div>
                             )}

@@ -83,10 +83,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       <p className="text-4xl font-bold text-gray-900">{stats?.etudiants}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-green-600 font-medium">↑ 12%</span>
-                        <span className="text-xs text-gray-500">vs mois dernier</span>
-                      </div>
+                     
                     </div>
                   </div>
                 </div>
@@ -105,10 +102,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       <p className="text-4xl font-bold text-gray-900">{stats?.projets}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-green-600 font-medium">↑ 8%</span>
-                        <span className="text-xs text-gray-500">vs mois dernier</span>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>
@@ -127,10 +121,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       <p className="text-4xl font-bold text-gray-900">{stats?.soutenances}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-yellow-600 font-medium">→ 5%</span>
-                        <span className="text-xs text-gray-500">stable</span>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>
@@ -149,10 +140,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       <p className="text-4xl font-bold text-gray-900">{stats?.salles}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-green-600 font-medium">↑ 3%</span>
-                        <span className="text-xs text-gray-500">vs mois dernier</span>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>

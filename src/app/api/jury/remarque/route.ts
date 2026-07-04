@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     }
 
     const { payload } = await jwtVerify(token, SECRET);
-    // On autorise les rôles 'jury' ou 'encadrant' selon ta configuration
-    if (payload.role !== 'jury' && payload.role !== 'encadrant') {
+    // On autorise les rôles 'jury' ou ' Encadreur ' selon ta configuration
+    if (payload.role !== 'jury' && payload.role !== ' Encadreur ') {
       return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
     }
 

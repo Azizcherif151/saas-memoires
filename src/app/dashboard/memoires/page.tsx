@@ -1,6 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  ResearchIcon,
+  BoockIcon,
+  StudentIcon,
+  CalendarIcon,
+  SablierIcon,
+  ProjectIcon
+} from '@/components/icons';
+
 
 interface Memoire {
   id: string;
@@ -82,10 +91,25 @@ export default function MemoiresPage() {
   );
 
   const getStatutBadge = (statut: string) => {
-    const badges = {
-      'brouillon': { bg: 'bg-gray-100', text: 'text-gray-800', icon: '📝', label: 'Brouillon' },
-      'en_attente_validation': { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: '⏳', label: 'En attente' },
-      'valide': { bg: 'bg-green-100', text: 'text-green-800', icon: '✓', label: 'Validé' },
+    const badges: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
+      'brouillon': { 
+        bg: 'bg-gray-100', 
+        text: 'text-gray-800', 
+        icon: <ProjectIcon  />, 
+        label: 'Brouillon' 
+      },
+      'en_attente_validation': { 
+        bg: 'bg-yellow-100', 
+        text: 'text-yellow-800', 
+        icon: <SablierIcon/>, 
+        label: 'En attente' 
+      },
+      'valide': { 
+        bg: 'bg-green-100', 
+        text: 'text-green-800', 
+        icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>, 
+        label: 'Validé' 
+      },
     };
     return badges[statut as keyof typeof badges] || badges['brouillon'];
   };
@@ -104,14 +128,14 @@ export default function MemoiresPage() {
                 Attribuez et suivez l'avancement des sujets de thèses
               </p>
             </div>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-gray-400"><ResearchIcon/> </span>
               <input
                 type="text"
                 placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 text-sm border border-gray-300  -lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               />
             </div>
           </div>
@@ -122,9 +146,9 @@ export default function MemoiresPage() {
       <main className="max-w-7xl mx-auto px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Formulaire */}
-          <div className="bg-white  -xl border border-gray-200 p-8 shadow-sm h-fit sticky top-24">
+          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm h-fit sticky top-24">
             <div className="mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center mb-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mb-3">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
@@ -141,7 +165,7 @@ export default function MemoiresPage() {
                   required
                   value={formData.titre}
                   onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                   placeholder="Ex: Application de gestion..."
                 />
               </div>
@@ -151,7 +175,7 @@ export default function MemoiresPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 h-24 resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 h-24 resize-none"
                   placeholder="Objectifs du projet..."
                 />
               </div>
@@ -161,7 +185,7 @@ export default function MemoiresPage() {
                 <select
                   value={formData.etudiantId}
                   onChange={(e) => setFormData({ ...formData, etudiantId: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 bg-white"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 bg-white"
                 >
                   <option value="">Sélectionner un étudiant...</option>
                   {etudiants.map((et) => (
@@ -171,7 +195,7 @@ export default function MemoiresPage() {
               </div>
 
               {statut.message && (
-                <div className={`p-3  -lg text-xs font-medium text-center transition ${
+                <div className={`p-3 rounded-lg text-xs font-medium text-center transition ${
                   statut.type === 'succes'
                     ? 'bg-green-50 text-green-800 border border-green-200'
                     : 'bg-red-50 text-red-800 border border-red-200'
@@ -183,7 +207,7 @@ export default function MemoiresPage() {
               <button
                 type="submit"
                 disabled={envoi}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5  -lg transition-all duration-200 transform hover:scale-105 disabled:scale-100"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100"
               >
                 {envoi ? 'Enregistrement...' : 'Créer le projet'}
               </button>
@@ -202,12 +226,14 @@ export default function MemoiresPage() {
             {chargement ? (
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-40 bg-white  -xl border border-gray-200 animate-pulse"></div>
+                  <div key={i} className="h-40 bg-white rounded-xl border border-gray-200 animate-pulse"></div>
                 ))}
               </div>
             ) : filteredMemoires.length === 0 ? (
-              <div className="bg-white  -xl border border-gray-200 p-12 text-center">
-                <div className="text-4xl mb-3">📚</div>
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <div className="relative flex items-center justify-center mb-3">
+                  <BoockIcon />
+                </div>
                 <p className="text-gray-600 text-sm font-medium">
                   {searchQuery ? 'Aucun projet ne correspond à votre recherche' : 'Aucun sujet enregistré'}
                 </p>
@@ -219,12 +245,13 @@ export default function MemoiresPage() {
                   return (
                     <div
                       key={m.id}
-                      className="bg-white  -xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200"
+                      className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200"
                     >
                       <div className="flex justify-between items-start gap-4 mb-3">
                         <h3 className="font-bold text-gray-900 text-base flex-1">{m.titre}</h3>
-                        <span className={`px-3 py-1  -full text-xs font-semibold whitespace-nowrap ${badge.bg} ${badge.text}`}>
-                          {badge.icon} {badge.label}
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${badge.bg} ${badge.text}`}>
+                          {badge.icon}
+                          {badge.label}
                         </span>
                       </div>
 
@@ -235,14 +262,14 @@ export default function MemoiresPage() {
                       <div className="pt-4 border-t border-gray-200 space-y-2">
                         <div className="flex justify-between items-center text-xs text-gray-600">
                           <div className="flex items-center gap-2">
-                            <span>👤</span>
+                            <span><StudentIcon/></span>
                             <span className="font-medium text-gray-900">
                               {m.etudiant_prenom ? `${m.etudiant_prenom} ${m.etudiant_nom}` : 'Non attribué'}
                             </span>
                           </div>
                         </div>
                         <div className="flex justify-between items-center text-xs text-gray-500">
-                          <span>📅 Mis à jour le {new Date(m.derniere_mise_a_jour).toLocaleDateString('fr-FR')}</span>
+                          <span><CalendarIcon/> Mis à jour le {new Date(m.derniere_mise_a_jour).toLocaleDateString('fr-FR')}</span>
                         </div>
                       </div>
                     </div>

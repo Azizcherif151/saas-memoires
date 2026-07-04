@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       [juryId]
     );
 
-    // 4. REQUÊTE 2 (Ajoutée) : Récupération de TOUS les projets dont il est l'encadrant principal
+    // 4. REQUÊTE 2 (Ajoutée) : Récupération de TOUS les projets dont il est l' Encadreur  principal
     // Utilise exactement les mêmes structures de tables (projets_memoire, utilisateurs)
     const projetsAttribues = await query(
       `SELECT 

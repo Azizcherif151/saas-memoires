@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  ResearchIcon
+} from '@/components/icons';
 
 interface Etudiant {
   id: number;
@@ -69,6 +72,9 @@ export default function EtudiantsPage() {
       setEnvoi(false);
     }
   };
+  const reserchItem = [
+      { href: '/dashboard', label: 'Vue d\'ensemble', Icon: ResearchIcon },
+    ];
 
   const filteredEtudiants = etudiants.filter(et => 
     `${et.prenom} ${et.nom}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,14 +96,16 @@ export default function EtudiantsPage() {
               </p>
             </div>
             <div className="flex gap-3">
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              <div className="relative flex items-center">
+                <span className="absolute left-3 text-gray-400">
+                  <ResearchIcon/>
+                </span>
                 <input
                   type="text"
                   placeholder="Rechercher..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 text-sm border border-gray-300  -lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
             </div>
@@ -109,9 +117,9 @@ export default function EtudiantsPage() {
       <main className="max-w-7xl mx-auto px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Formulaire d'ajout */}
-          <div className="bg-white  -xl border border-gray-200 p-8 shadow-sm h-fit sticky top-24">
+          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm h-fit sticky top-24">
             <div className="mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center mb-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mb-3">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
@@ -129,7 +137,7 @@ export default function EtudiantsPage() {
                   required
                   value={formData.prenom}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
                   placeholder="Ex: Aziz"
                 />
               </div>
@@ -142,7 +150,7 @@ export default function EtudiantsPage() {
                   required
                   value={formData.nom}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
                   placeholder="Ex: Cherif"
                 />
               </div>
@@ -155,7 +163,7 @@ export default function EtudiantsPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
                   placeholder="etudiant@ecole.com"
                 />
               </div>
@@ -168,13 +176,13 @@ export default function EtudiantsPage() {
                   required
                   value={formData.motDePasse}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900 placeholder-gray-500"
                   placeholder="••••••••"
                 />
               </div>
 
               {statut.message && (
-                <div className={`p-3  -lg text-xs font-medium text-center transition ${
+                <div className={`p-3 rounded-lg text-xs font-medium text-center transition ${
                   statut.type === 'succes'
                     ? 'bg-green-50 text-green-800 border border-green-200'
                     : 'bg-red-50 text-red-800 border border-red-200'
@@ -186,7 +194,7 @@ export default function EtudiantsPage() {
               <button
                 type="submit"
                 disabled={envoi}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5  -lg transition-all duration-200 transform hover:scale-105 disabled:scale-100"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100"
               >
                 {envoi ? 'Inscription en cours...' : 'Inscrire l\'étudiant'}
               </button>
@@ -194,7 +202,7 @@ export default function EtudiantsPage() {
           </div>
 
           {/* Liste des étudiants */}
-          <div className="lg:col-span-2 bg-white  -xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50">
               <h2 className="text-xl font-bold text-gray-900">
                 Liste des inscrits ({filteredEtudiants.length})
@@ -206,7 +214,7 @@ export default function EtudiantsPage() {
 
             {chargement ? (
               <div className="p-12 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100  -full animate-pulse mb-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full animate-pulse mb-3">
                   <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -236,7 +244,7 @@ export default function EtudiantsPage() {
                       <tr key={etudiant.id} className="hover:bg-blue-50 transition">
                         <td className="px-6 py-4 font-semibold text-gray-900">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8  -full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
                               {etudiant.prenom.charAt(0)}{etudiant.nom.charAt(0)}
                             </div>
                             {etudiant.prenom} {etudiant.nom}
