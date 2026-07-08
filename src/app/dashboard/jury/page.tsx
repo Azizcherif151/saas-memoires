@@ -146,13 +146,19 @@ export default function GestionComptesJury() {
       {/* Messages */}
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-3">
         {messageErreur && (
-          <div className="p-4 bg-red-50 border border-red-200  -lg text-red-800 text-sm font-medium flex items-center gap-3">
-            <span>⚠️</span> {messageErreur}
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm font-medium flex items-center gap-3">
+            <svg className="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{messageErreur}</span>
           </div>
         )}
         {messageSucces && (
-          <div className="p-4 bg-green-50 border border-green-200  -lg text-green-800 text-sm font-medium flex items-center gap-3">
-            <span>✓</span> {messageSucces}
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm font-medium flex items-center gap-3">
+            <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{messageSucces}</span>
           </div>
         )}
       </div>
@@ -163,9 +169,9 @@ export default function GestionComptesJury() {
           {/* Formulaires */}
           <div className="space-y-6">
             {/* Création de compte */}
-            <div className="bg-white  -xl border border-gray-200 p-6 shadow-sm">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
               <div className="mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50  -lg flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mb-3">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                   </svg>
@@ -182,7 +188,7 @@ export default function GestionComptesJury() {
                     required
                     value={prenom}
                     onChange={(e) => setPrenom(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     placeholder="Jean"
                   />
                 </div>
@@ -193,7 +199,7 @@ export default function GestionComptesJury() {
                     required
                     value={nom}
                     onChange={(e) => setNom(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     placeholder="Dupont"
                   />
                 </div>
@@ -204,7 +210,7 @@ export default function GestionComptesJury() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     placeholder="j.dupont@univ.com"
                   />
                 </div>
@@ -215,7 +221,7 @@ export default function GestionComptesJury() {
                     required
                     value={motDePasse}
                     onChange={(e) => setMotDePasse(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     placeholder="••••••••"
                   />
                 </div>
@@ -223,7 +229,7 @@ export default function GestionComptesJury() {
                 <button
                   type="submit"
                   disabled={creationEnCours}
-                  className="w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5  -lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
+                  className="w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
                 >
                   {creationEnCours ? "Création en cours..." : "Créer le compte"}
                 </button>
@@ -231,9 +237,9 @@ export default function GestionComptesJury() {
             </div>
 
             {/* Affectation */}
-            <div className="bg-white  -xl border border-blue-200 p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+            <div className="bg-white rounded-xl border border-blue-200 p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
               <div className="mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-100  -lg flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-100 rounded-lg flex items-center justify-center mb-3">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
@@ -249,7 +255,7 @@ export default function GestionComptesJury() {
                     required
                     value={enseignantId}
                     onChange={(e) => setEnseignantId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                   >
                     <option value="">-- Sélectionner --</option>
                     {juryListe.map((j) => (
@@ -264,7 +270,7 @@ export default function GestionComptesJury() {
                     required
                     value={soutenanceId}
                     onChange={(e) => setSoutenanceId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                   >
                     <option value="">-- Sélectionner --</option>
                     {soutenances.map((s) => (
@@ -281,19 +287,19 @@ export default function GestionComptesJury() {
                     required
                     value={roleJury}
                     onChange={(e) => setRoleJury(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300  -lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                   >
                     <option value="">-- Choisir un rôle --</option>
-                    <option value="president">🎓 Président du Jury</option>
-                    <option value="rapporteur">📄 Rapporteur</option>
-                    <option value="examinateur">✓ Examinateur</option>
+                    <option value="president">Président du Jury</option>
+                    <option value="rapporteur">Rapporteur</option>
+                    <option value="examinateur">Examinateur</option>
                   </select>
                 </div>
 
                 <button
                   type="submit"
                   disabled={affectationEnCours}
-                  className="w-full mt-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-green-400 disabled:to-green-500 text-white font-semibold py-2.5  -lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
+                  className="w-full mt-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-green-400 disabled:to-green-500 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 text-sm uppercase tracking-wider"
                 >
                   {affectationEnCours ? "Affectation..." : "Valider l'affectation"}
                 </button>
@@ -302,7 +308,7 @@ export default function GestionComptesJury() {
           </div>
 
           {/* Tableau */}
-          <div className="lg:col-span-2 bg-white  -xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50">
               <h2 className="text-lg font-bold text-gray-900">
                 Membres enregistrés ({juryListe.length})
@@ -311,7 +317,7 @@ export default function GestionComptesJury() {
 
             {chargement ? (
               <div className="p-12 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100  -full animate-pulse mb-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full animate-pulse mb-3">
                   <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -320,8 +326,10 @@ export default function GestionComptesJury() {
                 <p className="text-gray-600 text-sm font-medium">Chargement...</p>
               </div>
             ) : juryListe.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="text-4xl mb-3">👥</div>
+              <div className="p-12 text-center flex flex-col items-center justify-center">
+                <svg className="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
                 <p className="text-gray-600 text-sm font-medium">Aucun compte enseignant créé</p>
               </div>
             ) : (
@@ -339,7 +347,7 @@ export default function GestionComptesJury() {
                       <tr key={membre.id} className="hover:bg-blue-50 transition">
                         <td className="px-6 py-4 font-semibold text-gray-900">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8  -full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
                               {membre.prenom.charAt(0)}{membre.nom.charAt(0)}
                             </div>
                             M./Mme {membre.prenom} {membre.nom}
@@ -347,8 +355,8 @@ export default function GestionComptesJury() {
                         </td>
                         <td className="px-6 py-4 text-gray-600 text-xs font-mono">{membre.email}</td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold  -full">
-                            <span className="w-2 h-2 bg-green-600  -full"></span>
+                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            <span className="w-2 h-2 bg-green-600 rounded-full"></span>
                             Actif
                           </span>
                         </td>

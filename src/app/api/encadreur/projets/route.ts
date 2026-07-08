@@ -3,8 +3,14 @@ import { cookies } from 'next/headers';
 import { query } from '@/lib/db';
 import { jwtVerify } from 'jose';
 
-// Fonction interne pour récupérer et vérifier les informations de l' Encadreur  via le token
-async function get Encadreur InfoFromToken() {
+// Interface pour typer le retour du token
+interface AuthPayload {
+  id: string;
+  role: string;
+}
+
+// FONCTION CORRIGÉE : Suppression de l'espace dans le nom de la fonction
+async function getEncadreurInfoFromToken(): Promise<AuthPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session_token')?.value;
   if (!token) return null;
@@ -24,7 +30,7 @@ async function get Encadreur InfoFromToken() {
 // 1. Récupérer TOUS les projets assignés à l'encadreur connecté
 export async function GET(request: Request) {
   try {
-    const auth = await get Encadreur InfoFromToken();
+    const auth = await getEncadreurInfoFromToken();
 
     if (!auth) {
       return NextResponse.json({ error: 'Non autorisé. Session manquante ou expirée.' }, { status: 401 });
@@ -52,7 +58,7 @@ export async function GET(request: Request) {
 // 2. Valider, Rejeter ou Demander des modifications sur un mémoire
 export async function POST(request: Request) {
   try {
-    const auth = await get Encadreur InfoFromToken();
+    const auth = await getEncadreurInfoFromToken();
 
     if (!auth) {
       return NextResponse.json({ error: 'Non autorisé. Session manquante ou expirée.' }, { status: 401 });
@@ -67,7 +73,7 @@ export async function POST(request: Request) {
     else if (action === 'CORRIGER') nouveauStatut = 'A modifier'; // Gère l'état d'édition requis avant planification
     else return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
 
-    // Sécurité : On s'assure de filtrer également par encadreur_id pour que seul l' Encadreur  affecté puisse le modifier
+    // Sécurité : On s'assure de filtrer également par encadreur_id pour que seul l'encadreur affecté puisse le modifier
     await query(
       `UPDATE projets_memoire 
        SET statut = $1, remarque_encadreur = $2, derniere_mise_a_jour = NOW()

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Users, ShieldAlert, Plus, Search, CheckCircle, AlertCircle, Loader2, Power, PowerOff, LogOut } from 'lucide-react';
+import { Building2, Users, ShieldAlert, Plus, Search, CheckCircle, AlertCircle, Loader2, Power, PowerOff, LogOut, Trash2 } from 'lucide-react';
 
 interface Etablissement {
   id: string;
@@ -38,9 +38,11 @@ export default function SuperAdminDashboard() {
   // Navigation par onglet
   const [activeTab, setActiveTab] = useState<TabType>('etablissements');
   
-  // États du formulaire établissement complet (fusionné depuis register)
+  // États du formulaire établissement + admin unifié
   const [formData, setFormData] = useState({
-    nomEtablissement: '',
+    nom: '',
+    responsable: '',
+    email: '',
     prenomAdmin: '',
     nomAdmin: '',
     emailAdmin: '',
@@ -50,6 +52,7 @@ export default function SuperAdminDashboard() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   // États des données serveurs
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
@@ -112,14 +115,15 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  // Création d'une instance avec son admin référent (POST)
+  // Création d'une instance avec son admin référent (POST) - API UNIFIÉE
   const handleCreateEtablissement = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsError(false);
     setStatusMessage('');
 
     try {
-      const response = await fetch('/api/etablissement/register', {
+      // ✅ CORRECTION : Utilise la nouvelle URL API unifiée
+      const response = await fetch('/api/superadmin/etablissements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -128,28 +132,32 @@ export default function SuperAdminDashboard() {
 
       if (!response.ok) {
         setIsError(true);
-        setStatusMessage(data.error || "Une erreur est survenue lors de l'inscription.");
+        setStatusMessage(data.error || "Une erreur est survenue lors de la création.");
       } else {
         setIsError(false);
-        setStatusMessage(`✓ L'établissement "${formData.nomEtablissement}" et son compte administrateur ont été configurés.`);
+        setStatusMessage(`✓ L'établissement "${formData.nom}" et son compte administrateur ont été configurés.`);
         
         const nouvelEtab = {
-          id: data.data?.id || Math.random().toString(),
-          nom: formData.nomEtablissement,
-          responsable: `${formData.prenomAdmin} ${formData.nomAdmin}`,
-          email: formData.emailAdmin,
+          id: data.data?.etablissement?.id || Math.random().toString(),
+          nom: formData.nom,
+          responsable: formData.responsable || `${formData.prenomAdmin} ${formData.nomAdmin}`,
+          email: formData.email || formData.emailAdmin,
           statut: 'Actif'
         };
         setEtablissements(prev => [nouvelEtab, ...prev]);
 
+        // Réinitialiser le formulaire
         setFormData({
-          nomEtablissement: '',
+          nom: '',
+          responsable: '',
+          email: '',
           prenomAdmin: '',
           nomAdmin: '',
           emailAdmin: '',
           motDePasseEnClair: '',
         });
 
+        // Rafraîchir les logs
         const resLogs = await fetch('/api/superadmin/logs');
         const dataLogs = await resLogs.json();
         if (resLogs.ok) setLogs(dataLogs.logs || []);
@@ -182,6 +190,47 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Suppression d'établissement
+  const handleDeleteEtablissement = async (id: string, nom: string) => {
+    const firstConfirm = window.confirm(`Êtes-vous sûr de vouloir supprimer l'établissement "${nom}" ?`);
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm(`ATTENTION DANGER : Cette action est IRRÉVERSIBLE.\n\nTous les utilisateurs, projets, salles et données liés à "${nom}" seront définitivement supprimés.\n\nConfirmez-vous ?`);
+    if (!secondConfirm) return;
+
+    setDeletingId(id);
+    setIsError(false);
+    setStatusMessage('');
+
+    try {
+      const response = await fetch('/api/superadmin/etablissements/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsError(false);
+        setStatusMessage(`✓ ${data.message}`);
+        setEtablissements(prev => prev.filter(item => item.id !== id));
+        
+        const resLogs = await fetch('/api/superadmin/logs');
+        const dataLogs = await resLogs.json();
+        if (resLogs.ok) setLogs(dataLogs.logs || []);
+      } else {
+        setIsError(true);
+        setStatusMessage(data.error || "Une erreur est survenue lors de la suppression.");
+      }
+    } catch (error) {
+      setIsError(true);
+      setStatusMessage("Erreur réseau lors de la suppression.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   // Filtrage par barre de recherche
   const filteredEtablissements = etablissements.filter(e => 
     e.nom.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -200,7 +249,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 antialiased font-sans">
       
-      {/* Header (Inspiré de superadmin2) */}
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -213,7 +262,6 @@ export default function SuperAdminDashboard() {
               </p>
             </div>
             
-            {/* Bouton de déconnexion */}
             <button
               onClick={handleLogout}
               disabled={isDisconnecting}
@@ -230,7 +278,7 @@ export default function SuperAdminDashboard() {
         </div>
       </header>
 
-      {/* Navigation - Onglets modernes et clairs */}
+      {/* Navigation - Onglets */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-8">
@@ -278,35 +326,69 @@ export default function SuperAdminDashboard() {
         {activeTab === 'etablissements' && (
           <div className="space-y-6">
             
-            {/* Formulaire complet d'enregistrement */}
+            {/* Formulaire complet d'enregistrement - ADAPTÉ */}
             <div className="bg-white  border border-gray-200 shadow-sm p-6 sm:p-8">
               <div className="mb-6 space-y-1">
                 <h2 className="text-xl font-bold text-gray-900">Inscrire un Nouvel Établissement</h2>
-                <p className="text-gray-600 text-xs">Configurez l'instance de l'école et générez instantanément les accès de l'administrateur principal.</p>
+                <p className="text-gray-600 text-xs">Configurez l'établissement et générez instantanément les accès de l'administrateur principal.</p>
               </div>
         
               <form onSubmit={handleCreateEtablissement} className="space-y-6">
-                {/* Section Instance */}
-                <div className="space-y-3">
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider" >Nom de l'établissement</label>
-                  <input 
-                    type="text" 
-                    name="nomEtablissement" 
-                    required 
-                    value={formData.nomEtablissement} 
-                    onChange={handleChange} 
-                    placeholder="Ex: Université de Technologie (ESATIC)" 
-                    className="w-full px-4 py-2.5 border border-gray-300  text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white transition"
-                  />
+                {/* Section Établissement */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Informations de l'établissement</h3>
+                  
+                  <div className="space-y-3">
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Nom de l'établissement *</label>
+                    <input 
+                      type="text" 
+                      name="nom" 
+                      required 
+                      value={formData.nom} 
+                      onChange={handleChange} 
+                      placeholder="Ex: Université de Technologie (ESATIC)" 
+                      className="w-full px-4 py-2.5 border border-gray-300  text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white transition"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Responsable</label>
+                      <input 
+                        type="text" 
+                        name="responsable" 
+                        value={formData.responsable} 
+                        onChange={handleChange} 
+                        placeholder="Ex: Jean Dupont" 
+                        className="w-full px-4 py-2.5 border border-gray-300  text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white transition"
+                      />
+                      <p className="text-xs text-gray-500">Optionnel</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Email de contact</label>
+                      <input 
+                        type="email" 
+                        name="email" 
+                        value={formData.email} 
+                        onChange={handleChange} 
+                        placeholder="contact@etablissement.com" 
+                        className="w-full px-4 py-2.5 border border-gray-300  text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white transition"
+                      />
+                      <p className="text-xs text-gray-500">Optionnel</p>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Séparateur */}
+                <div className="border-t border-gray-200"></div>
+
                 {/* Section Admin Responsable */}
-                <div className="pt-4 border-t border-gray-200 space-y-4">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Compte Administrateur Référent</h3>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Compte Administrateur Référent *</h3>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Prénom</label>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Prénom *</label>
                       <input 
                         type="text" 
                         name="prenomAdmin" 
@@ -318,7 +400,7 @@ export default function SuperAdminDashboard() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider"> Nom</label>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Nom *</label>
                       <input 
                         type="text" 
                         name="nomAdmin" 
@@ -333,7 +415,7 @@ export default function SuperAdminDashboard() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Email Professionnel</label>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Email Professionnel *</label>
                       <input 
                         type="email" 
                         name="emailAdmin" 
@@ -345,7 +427,7 @@ export default function SuperAdminDashboard() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Mot de passe initial</label>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Mot de passe initial *</label>
                       <input 
                         type="password" 
                         name="motDePasseEnClair" 
@@ -422,25 +504,41 @@ export default function SuperAdminDashboard() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button 
-                              onClick={() => toggleStatus(item.id, item.statut)}
-                              className={`px-4 py-2 text-xs font-medium transition flex items-center gap-1.5 ml-auto ${
-                                item.statut === 'Actif' 
-                                  ? 'bg-red-100 hover:bg-red-200 text-red-700' 
-                                  : 'bg-green-100 hover:bg-green-200 text-green-700'
-                              }`}
-                              title={item.statut === 'Actif' ? "Suspendre l'établissement" : "Réactiver l'établissement"}
-                            >
-                              {item.statut === 'Actif' ? (
-                                <>
-                                  <PowerOff className="w-3.5 h-3.5" /> Suspendre
-                                </>
-                              ) : (
-                                <>
-                                  <Power className="w-3.5 h-3.5" />Réactiver
-                                </>
-                              )}
-                            </button>
+                            <div className="flex items-center gap-2 justify-end">
+                              <button 
+                                onClick={() => toggleStatus(item.id, item.statut)}
+                                className={`px-4 py-2 text-xs font-medium transition flex items-center gap-1.5 ${
+                                  item.statut === 'Actif' 
+                                    ? 'bg-red-100 hover:bg-red-200 text-red-700' 
+                                    : 'bg-green-100 hover:bg-green-200 text-green-700'
+                                }`}
+                                title={item.statut === 'Actif' ? "Suspendre l'établissement" : "Réactiver l'établissement"}
+                              >
+                                {item.statut === 'Actif' ? (
+                                  <>
+                                    <PowerOff className="w-3.5 h-3.5" /> Suspendre
+                                  </>
+                                ) : (
+                                  <>
+                                    <Power className="w-3.5 h-3.5" />Réactiver
+                                  </>
+                                )}
+                              </button>
+
+                              <button 
+                                onClick={() => handleDeleteEtablissement(item.id, item.nom)}
+                                disabled={deletingId === item.id}
+                                className="px-4 py-2 text-xs font-medium bg-gray-100 hover:bg-red-600 text-gray-700 hover:text-white transition flex items-center gap-1.5 disabled:opacity-50"
+                                title={`Supprimer définitivement l'établissement "${item.nom}" et toutes ses données`}
+                              >
+                                {deletingId === item.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                )}
+                                Supprimer
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))

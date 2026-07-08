@@ -19,8 +19,8 @@
       }
     ],
     "paths": {
-  "@/*": ["./src/*"]
-}
+      "@/*": ["./src/*"]  // ← C'était correct avant !
+    }
   },
   "include": [
     "next-env.d.ts",

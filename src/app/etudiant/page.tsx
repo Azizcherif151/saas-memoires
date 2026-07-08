@@ -200,9 +200,9 @@ export default function EtudiantDashboard() {
               </button>
               <button
                 onClick={async () => {
-                  document.cookie = "session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                  window.location.href = '/login';
-                }}
+  document.cookie = "session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
+  window.location.href = '/login';
+}}
                 className="text-xs bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 px-3 py-2 rounded-lg font-medium transition flex items-center gap-1.5"
               >
                 <LogoutIcon /> Déconnexion

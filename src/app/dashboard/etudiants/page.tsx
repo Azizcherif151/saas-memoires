@@ -223,8 +223,10 @@ export default function EtudiantsPage() {
                 <p className="text-gray-600 text-sm font-medium">Chargement de la liste...</p>
               </div>
             ) : filteredEtudiants.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="text-4xl mb-3">📭</div>
+              <div className="p-12 text-center flex flex-col items-center justify-center">
+                <svg className="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-4m-8 0H4m12 0v2a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2m6 0H9" />
+                </svg>
                 <p className="text-gray-600 text-sm font-medium">
                   {searchQuery ? 'Aucun étudiant ne correspond à votre recherche' : 'Aucun étudiant inscrit pour le moment'}
                 </p>

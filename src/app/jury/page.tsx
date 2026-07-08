@@ -108,7 +108,14 @@ export default function JuryDashboard() {
       setEnvoiEnCours(false);
     }
   };
-
+const isValidUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
   const handleDemanderModifications = async (targetProjetId: string) => {
     if (!commentaires.trim()) {
       alert('Veuillez spécifier des remarques.');
@@ -254,13 +261,13 @@ export default function JuryDashboard() {
                   </div>
 
                   <div className="pt-3 border-t border-gray-200 flex items-center justify-between gap-2 mt-3">
-                    {p.url_livrable ? (
-                      <a href={p.url_livrable} target="_blank" rel="noreferrer" className="text-2xs text-blue-600 hover:underline font-medium flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                   {p.url_livrable && isValidUrl(p.url_livrable) ? (
+  <a href={p.url_livrable} target="_blank" rel="noopener noreferrer">
+    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
-                        Voir PDF
-                      </a>
+    Voir PDF
+  </a>
                     ) : (
                       <span className="text-2xs text-gray-400 italic">Pas de livrable</span>
                     )}

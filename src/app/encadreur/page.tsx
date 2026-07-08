@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 interface Projet {
   id: string;
@@ -13,6 +14,17 @@ interface Projet {
   etudiant_prenom: string;
   derniere_mise_a_jour: string;
 }
+
+// ✅ Fonction de validation d'URL pour éviter l'XSS
+const isValidUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    // Accepter seulement http et https
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
 
 export default function EncadreurDashboard() {
   const [projets, setProjets] = useState<Projet[]>([]);
@@ -102,20 +114,29 @@ export default function EncadreurDashboard() {
                   Étudiant : <span className="text-gray-900">{projet.etudiant_prenom} {projet.etudiant_nom}</span>
                 </div>
 
-                {/* Lien vers le PDF si existant */}
-                {projet.url_livrable ? (
+                {/* Lien vers le PDF si existant - SÉCURISÉ CONTRE XSS */}
+                {projet.url_livrable && isValidUrl(projet.url_livrable) ? (
                   <div className="pt-2">
                     <a 
                       href={projet.url_livrable} 
                       target="_blank" 
-                      rel="noreferrer" 
-                      className="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
                     >
-                      📄 Ouvrir et relire le document PDF soumis
+                      <FileText className="w-4 h-4" />
+                      Ouvrir et relire le document PDF soumis
                     </a>
                   </div>
+                ) : projet.url_livrable ? (
+                  <p className="text-xs text-red-600 italic pt-2 flex items-center gap-2">
+                    <XCircle className="w-4 h-4" />
+                    URL du document invalide
+                  </p>
                 ) : (
-                  <p className="text-xs text-amber-600 italic pt-2">Aucun document déposé par l'étudiant pour le moment.</p>
+                  <p className="text-xs text-amber-600 italic pt-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Aucun document déposé par l'étudiant pour le moment.
+                  </p>
                 )}
               </div>
 
@@ -136,8 +157,9 @@ export default function EncadreurDashboard() {
                   <button
                     disabled={actionEnCours === projet.id}
                     onClick={() => handleDecision(projet.id, 'CORRIGER')}
-                    className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700  -md text-xs font-semibold transition border border-amber-200"
+                    className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700  -md text-xs font-semibold transition border border-amber-200 flex items-center justify-center gap-2"
                   >
+                    <AlertCircle className="w-4 h-4" />
                     Demander des modifications
                   </button>
                   
@@ -145,15 +167,17 @@ export default function EncadreurDashboard() {
                     <button
                       disabled={actionEnCours === projet.id}
                       onClick={() => handleDecision(projet.id, 'REJETER')}
-                      className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-700  -md text-xs font-semibold transition"
+                      className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-700  -md text-xs font-semibold transition flex items-center justify-center gap-2"
                     >
+                      <XCircle className="w-4 h-4" />
                       Rejeter
                     </button>
                     <button
                       disabled={actionEnCours === projet.id}
                       onClick={() => handleDecision(projet.id, 'APPROUVER')}
-                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white  -md text-xs font-semibold transition"
+                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white  -md text-xs font-semibold transition flex items-center justify-center gap-2"
                     >
+                      <CheckCircle className="w-4 h-4" />
                       Valider le projet
                     </button>
                   </div>

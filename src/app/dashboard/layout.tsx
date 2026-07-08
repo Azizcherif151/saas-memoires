@@ -44,9 +44,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   const handleLogout = () => {
-    document.cookie = 'session_token=; max-age=0; path=/;';
-    router.push('/login');
-  };
+  document.cookie = 'session_token=; max-age=0; path=/; Secure; SameSite=Strict';
+  router.push('/login');
+};
 
   if (chargement) {
     return (
