@@ -43,40 +43,35 @@ export default function LandingPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatut("envoi");
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setStatut('envoi');
 
-    // Construction du mail
-    const subject = encodeURIComponent(
-      `Demande de création de compte – ${formData.nomEtablissement}`
-    );
-    const body = encodeURIComponent(
-      `Bonjour SuperAdmin,\n\n` +
-        `Je souhaite créer un compte établissement sur EduSoutenance.\n\n` +
-        `Établissement : ${formData.nomEtablissement}\n` +
-        `Contact : ${formData.nomContact}\n` +
-        `Email : ${formData.email}\n` +
-        `Téléphone : ${formData.telephone || "Non renseigné"}\n\n` +
-        `Message :\n${formData.message || "Aucun message supplémentaire."}\n\n` +
-        `Merci de me recontacter pour finaliser la création du compte.`
-    );
+  try {
+    const res = await fetch('/api/demandes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
 
-    // Ouvre le client mail de l'utilisateur
-    window.location.href = `mailto:azizcherif151@gmail.com?subject=${subject}&body=${body}`;
+    const data = await res.json();
 
-    // Feedback visuel
-    setTimeout(() => {
-      setStatut("succes");
-      setFormData({
-        nomEtablissement: "",
-        nomContact: "",
-        email: "",
-        telephone: "",
-        message: "",
-      });
-    }, 800);
-  };
+    if (!res.ok) {
+      throw new Error(data.error || 'Erreur lors de l\'envoi');
+    }
+
+    setStatut('succes');
+    setFormData({
+      nomEtablissement: '',
+      nomContact: '',
+      email: '',
+      telephone: '',
+      message: '',
+    });
+  } catch {
+    setStatut('erreur');
+  }
+};
 
   const fadeClass = (id: string) =>
     `transition-all duration-700 ease-out ${
@@ -605,6 +600,12 @@ export default function LandingPage() {
                 ✓ Votre client mail s’est ouvert. Envoyez le message pour finaliser la demande.
               </div>
             )}
+            
+            {statut === 'erreur' && (
+  <p className="text-sm text-red-600 text-center">
+    L&apos;envoi a échoué. Réessayez ou contactez-nous à azizcherif151@gmail.com
+  </p>
+)}
 
             <button
               type="submit"
