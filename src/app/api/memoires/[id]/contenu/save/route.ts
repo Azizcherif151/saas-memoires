@@ -21,9 +21,10 @@ async function getEtudiantInfoFromToken(request: Request) {
 }
 
 // GET: Récupérer le contenu du mémoire
+// GET
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getEtudiantInfoFromToken(request);
@@ -31,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const memoireId = params.id;
+    const { id: memoireId } = await params;
 
     // Vérifier que l'étudiant est propriétaire du mémoire
     const proprietaireResult = await query(
@@ -67,10 +68,10 @@ export async function GET(
   }
 }
 
-// POST: Sauvegarder le contenu du mémoire
+// POST
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getEtudiantInfoFromToken(request);
@@ -78,8 +79,8 @@ export async function POST(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const memoireId = params.id;
-     const { contenu, pageSettings } = await request.json();
+    const { id: memoireId } = await params;
+    const { contenu, pageSettings } = await request.json();
 
     if (contenu === undefined || contenu === null) {
       return NextResponse.json({ error: 'Le contenu est obligatoire' }, { status: 400 });

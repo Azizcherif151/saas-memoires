@@ -26,7 +26,7 @@ async function getUserInfoFromToken(request: Request) {
 // GET: Récupérer toutes les corrections d'un mémoire
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getUserInfoFromToken(request);
@@ -34,7 +34,7 @@ export async function GET(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const memoireId = params.id;
+    const { id: memoireId } = await params;
 
     // Vérifier que le mémoire existe et que l'utilisateur y a accès
     const memoireResult = await query(
@@ -104,7 +104,7 @@ export async function GET(
 // POST: Ajouter une correction
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getUserInfoFromToken(request);
@@ -112,7 +112,7 @@ export async function POST(
       return NextResponse.json({ error: 'Non autorisé - encadreur requis' }, { status: 401 });
     }
 
-    const memoireId = params.id;
+    const { id: memoireId } = await params;
     const { 
       positionDebut, 
       positionFin, 

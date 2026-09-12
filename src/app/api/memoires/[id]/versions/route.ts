@@ -23,7 +23,7 @@ async function getEtudiantInfoFromToken(request: Request) {
  
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getEtudiantInfoFromToken(request);
@@ -31,8 +31,7 @@ export async function GET(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
  
-    const memoireId = params.id;
- 
+const { id: memoireId } = await params; 
     // Vérifier que l'utilisateur a accès au mémoire
     const proprietaireResult = await query(
       `SELECT etudiant_id FROM projets_memoire WHERE id = $1;`,

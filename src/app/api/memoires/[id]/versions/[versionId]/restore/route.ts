@@ -22,15 +22,15 @@ async function getEtudiantInfoFromToken(request: Request) {
  
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; versionId: string } }
+  { params }: { params: Promise<{ id: string; versionId: string }> }
 ) {
   try {
     const auth = await getEtudiantInfoFromToken(request);
     if (!auth || auth.role !== 'etudiant') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
- 
-    const { id: memoireId, versionId } = params;
+
+    const { id: memoireId, versionId } = await params;
  
     // Vérifier que l'utilisateur est propriétaire
     const proprietaireResult = await query(

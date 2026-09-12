@@ -64,6 +64,8 @@ export async function POST(request: Request) {
       redirectTo = '/etudiant';
     } else if (utilisateur.role === 'jury') {
       redirectTo = '/jury';
+    } else if (utilisateur.role === 'encadreur') {
+      redirectTo = '/encadreur';
     }
 
     // Configuration de la réponse avec la route de redirection incluse
