@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { nomEtablissement, nomContact, email, telephone, message } = body;
 
-    if (!nomEtablissement || !nomContact || !email) {
+    if (!nomEtablissement?.trim() || !nomContact?.trim() || !email?.trim()) {
       return NextResponse.json(
         { error: 'Établissement, contact et email sont obligatoires.' },
         { status: 400 }
@@ -15,14 +15,14 @@ export async function POST(request: Request) {
 
     await query(
       `INSERT INTO demandes_acces
-         (nom_etablissement, nom_contact, email, telephone, message)
-       VALUES ($1, $2, $3, $4, $5)`,
+         (nom_etablissement, nom_contact, email, telephone, message, statut)
+       VALUES ($1, $2, $3, $4, $5, 'nouvelle')`,
       [
-        nomEtablissement,
-        nomContact,
-        email,
-        telephone || null,
-        message || null,
+        nomEtablissement.trim(),
+        nomContact.trim(),
+        email.trim().toLowerCase(),
+        telephone?.trim() || null,
+        message?.trim() || null,
       ]
     );
 
@@ -31,9 +31,9 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Erreur POST /api/demandes:', error);
+    console.error('POST /api/demandes:', error);
     return NextResponse.json(
-      { error: 'Impossible d\'enregistrer la demande.' },
+      { error: "Impossible d'enregistrer la demande." },
       { status: 500 }
     );
   }

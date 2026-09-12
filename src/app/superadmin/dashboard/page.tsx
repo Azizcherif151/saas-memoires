@@ -16,6 +16,7 @@ import {
   LogOut,
   Trash2,
   ArrowLeft,
+  Inbox,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -45,7 +46,18 @@ interface LogActivite {
   date_action: string;
 }
 
-type TabType = 'etablissements' | 'utilisateurs' | 'logs';
+interface DemandeAcces {
+  id: string;
+  nom_etablissement: string;
+  nom_contact: string;
+  email: string;
+  telephone: string | null;
+  message: string | null;
+  statut: string;
+  date_creation: string;
+}
+
+type TabType = 'etablissements' | 'utilisateurs' | 'logs' | 'demandes';
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
@@ -70,6 +82,7 @@ export default function SuperAdminDashboard() {
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [utilisateurs, setUtilisateurs] = useState<Utilisateur[]>([]);
   const [logs, setLogs] = useState<LogActivite[]>([]);
+  const [demandes, setDemandes] = useState<DemandeAcces[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -81,19 +94,22 @@ export default function SuperAdminDashboard() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [resEtab, resUsers, resLogs] = await Promise.all([
+        const [resEtab, resUsers, resLogs, resDemandes] = await Promise.all([
           fetch('/api/superadmin/etablissements'),
           fetch('/api/superadmin/utilisateurs'),
           fetch('/api/superadmin/logs'),
+          fetch('/api/superadmin/demandes'),
         ]);
 
         const dataEtab = await resEtab.json();
         const dataUsers = await resUsers.json();
         const dataLogs = await resLogs.json();
+        const dataDemandes = await resDemandes.json();
 
         if (resEtab.ok) setEtablissements(dataEtab.etablissements || dataEtab || []);
         if (resUsers.ok) setUtilisateurs(dataUsers.utilisateurs || dataUsers || []);
         if (resLogs.ok) setLogs(dataLogs.logs || dataLogs || []);
+        if (resDemandes.ok) setDemandes(dataDemandes.demandes || []);
       } catch {
         setIsError(true);
         setStatusMessage('Erreur réseau lors du chargement des données.');
@@ -229,6 +245,23 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const updateDemandeStatut = async (id: string, statut: string) => {
+    try {
+      const res = await fetch('/api/superadmin/demandes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, statut }),
+      });
+      if (res.ok) {
+        setDemandes((prev) =>
+          prev.map((d) => (d.id === id ? { ...d, statut } : d))
+        );
+      }
+    } catch {
+      console.error('Impossible de mettre à jour le statut de la demande');
+    }
+  };
+
   const filteredEtablissements = etablissements.filter(
     (e) =>
       e.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -245,9 +278,16 @@ export default function SuperAdminDashboard() {
       l.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.cible.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const filteredDemandes = demandes.filter(
+    (d) =>
+      d.nom_etablissement.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.nom_contact.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const actifs = etablissements.filter((e) => e.statut === 'Actif').length;
   const suspendus = etablissements.filter((e) => e.statut === 'Suspendu').length;
+  const demandesNouvelles = demandes.filter((d) => d.statut === 'nouvelle').length;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -294,12 +334,13 @@ export default function SuperAdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         {/* Stats */}
-        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {[
-            { label: 'Établissements', value: etablissements.length, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Actifs', value: actifs, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { label: 'Suspendus', value: suspendus, color: 'text-amber-600', bg: 'bg-amber-50' },
-            { label: 'Utilisateurs', value: utilisateurs.length, color: 'text-violet-600', bg: 'bg-violet-50' },
+            { label: 'Établissements', value: etablissements.length, color: 'text-indigo-600' },
+            { label: 'Actifs', value: actifs, color: 'text-emerald-600' },
+            { label: 'Suspendus', value: suspendus, color: 'text-amber-600' },
+            { label: 'Utilisateurs', value: utilisateurs.length, color: 'text-violet-600' },
+            { label: 'Demandes', value: demandesNouvelles, color: 'text-rose-600' },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -333,6 +374,7 @@ export default function SuperAdminDashboard() {
         <div className="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-px">
           {[
             { id: 'etablissements' as TabType, label: 'Établissements', icon: Building2 },
+            { id: 'demandes' as TabType, label: 'Demandes', icon: Inbox },
             { id: 'utilisateurs' as TabType, label: 'Comptes', icon: Users },
             { id: 'logs' as TabType, label: 'Sécurité & Logs', icon: ShieldAlert },
           ].map((tab) => {
@@ -352,6 +394,11 @@ export default function SuperAdminDashboard() {
               >
                 <Icon className="h-4 w-4" />
                 {tab.label}
+                {tab.id === 'demandes' && demandesNouvelles > 0 && (
+                  <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    {demandesNouvelles}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -378,7 +425,6 @@ export default function SuperAdminDashboard() {
             {/* ========== ONGLET ÉTABLISSEMENTS ========== */}
             {activeTab === 'etablissements' && (
               <div className="grid gap-8 lg:grid-cols-5">
-                {/* Formulaire */}
                 <div className="lg:col-span-2">
                   <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="mb-5 flex items-center gap-2">
@@ -481,7 +527,6 @@ export default function SuperAdminDashboard() {
                   </div>
                 </div>
 
-                {/* Liste */}
                 <div className="lg:col-span-3">
                   <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <div className="border-b border-slate-100 px-5 py-4">
@@ -562,6 +607,91 @@ export default function SuperAdminDashboard() {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* ========== ONGLET DEMANDES ========== */}
+            {activeTab === 'demandes' && (
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+                  <h3 className="font-semibold text-slate-900">
+                    Demandes d&apos;accès ({filteredDemandes.length})
+                  </h3>
+                  <span className="text-xs text-slate-500">
+                    {demandesNouvelles} nouvelle(s)
+                  </span>
+                </div>
+
+                {filteredDemandes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <Inbox className="mb-3 h-10 w-10 text-slate-300" />
+                    <p className="text-sm text-slate-500">Aucune demande pour le moment</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {filteredDemandes.map((d) => (
+                      <div key={d.id} className="px-5 py-4 hover:bg-slate-50/80 transition">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold text-slate-900">{d.nom_etablissement}</p>
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                                  d.statut === 'nouvelle'
+                                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200'
+                                    : d.statut === 'traitee'
+                                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                                    : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'
+                                }`}
+                              >
+                                {d.statut}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-sm text-slate-600">
+                              {d.nom_contact} · {d.email}
+                              {d.telephone ? ` · ${d.telephone}` : ''}
+                            </p>
+                            {d.message && (
+                              <p className="mt-2 text-sm text-slate-500 whitespace-pre-wrap">
+                                {d.message}
+                              </p>
+                            )}
+                            <p className="mt-2 text-xs text-slate-400">
+                              {new Date(d.date_creation).toLocaleString('fr-FR')}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 shrink-0">
+                            {d.statut !== 'traitee' && (
+                              <button
+                                onClick={() => updateDemandeStatut(d.id, 'traitee')}
+                                className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                              >
+                                Marquer traitée
+                              </button>
+                            )}
+                            {d.statut !== 'refusee' && (
+                              <button
+                                onClick={() => updateDemandeStatut(d.id, 'refusee')}
+                                className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                              >
+                                Refuser
+                              </button>
+                            )}
+                            {d.statut !== 'nouvelle' && (
+                              <button
+                                onClick={() => updateDemandeStatut(d.id, 'nouvelle')}
+                                className="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+                              >
+                                Remettre nouvelle
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

@@ -43,7 +43,7 @@ export default function LandingPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setStatut('envoi');
 
@@ -53,12 +53,8 @@ export default function LandingPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     });
-
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Erreur lors de l\'envoi');
-    }
+    if (!res.ok) throw new Error(data.error || 'Erreur');
 
     setStatut('succes');
     setFormData({
@@ -597,13 +593,13 @@ export default function LandingPage() {
 
             {statut === "succes" && (
               <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-medium">
-                ✓ Votre client mail s’est ouvert. Envoyez le message pour finaliser la demande.
+                ✓ Nous avons reçu votre demande. Vous recevrez vos identifiants par email après validation par l'Administrateur.
               </div>
             )}
-            
+
             {statut === 'erreur' && (
-  <p className="text-sm text-red-600 text-center">
-    L&apos;envoi a échoué. Réessayez ou contactez-nous à azizcherif151@gmail.com
+  <p className="text-center text-sm text-red-600">
+    Une erreur est survenu venu, veuillez réessayer
   </p>
 )}
 
